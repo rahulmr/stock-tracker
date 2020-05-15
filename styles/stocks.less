@@ -1,0 +1,137 @@
+
+
+
+.stock-data{
+  margin: 10px;
+
+  .setting-config {
+    width: 100%;
+    height: 50px;
+    .setting-items{
+      float: left;
+      margin-right: 30px;
+    }
+  }
+
+
+  .sections{
+    min-width: 350px;
+    width: 45%; 
+    float: left;
+    margin: 1% ;
+    margin-top: 20px;
+    border: 1px solid black;
+  
+
+    .section-header {
+      border-bottom: 2px solid black;
+      padding: 10px;
+      .stock-signify{
+        font-size: 12px;
+        margin-left: 20px;
+      }
+    }
+
+    .section-body{
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .section-item{
+      margin-top: 10px;
+      padding: 0px 10px;
+    }
+    
+  }
+
+  .money-control-OI{
+    clear: both;
+    .OI_items {
+      clear: both;
+      div {
+        margin-right: 25px;
+        width: 150px;
+        float: left;
+      }
+    }
+  }
+
+  .open-interest-btn{
+    float: right;
+    margin-right: 20px;
+  }
+}
+
+.ant-table-thead > tr > th, .ant-table-tbody > tr > td{
+  padding: 4px 5px;
+}
+
+
+/*************** Layout ********************************/
+
+#components-layout-demo-top-side .logo {
+  width: 120px;
+  height: 31px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 16px 28px 16px 0;
+  float: left;
+}
+
+.site-layout-background {
+  background: #fff;
+}
+
+.layout-main-content{
+  padding: 0px 50px;  
+
+  .layout-sub-content {
+    padding: 0px 40px;  
+  }
+}
+
+.ant-layout-footer {
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+}
+
+.site-layout-background{
+  padding: 25px 0px;
+  .ant-layout-sider-zero-width-trigger{
+    top: 25px;
+  }
+}
+
+
+/*********************************************************************/
+
+@media screen and (max-width: 720px) {
+
+  .stock-data{
+    margin: 10px;
+    .sections{
+      min-width: 350px;
+      max-width: 90%;
+    }
+
+    .setting-config .setting-items{
+      padding-bottom: 10px;
+      margin-right: 5px;
+      .ant-input-number{
+        width: 80px;
+      }
+    }
+  }
+
+
+  .layout-main-content{
+    padding: 0px 10px;  
+    .layout-sub-content {
+        padding: 0px 15px 35px 35px;
+        .stock-data .sections {
+          min-width: 300px;
+          max-width: 90%;
+          margin-left: -15px;
+      }
+    }
+  }
+}

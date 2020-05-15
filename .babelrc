@@ -1,0 +1,4 @@
+{
+    "presets": ["@babel/env", "@babel/react"],
+    "plugins": [["import", {"libraryName": "antd", "style": true}], "@babel/syntax-dynamic-import", "@babel/plugin-transform-runtime"]
+  }

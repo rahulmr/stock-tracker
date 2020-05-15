@@ -1,0 +1,61 @@
+{
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended"
+    ],
+    "parser": "babel-eslint",
+    "rules": {
+        "semi": "error",
+        "react/boolean-prop-naming": "error",
+        "react/no-array-index-key": "error",
+        "react/require-default-props": "error",
+        "react/jsx-props-no-multi-spaces": "error",
+        "no-multi-spaces": "error",
+        "no-trailing-spaces": "warn",
+        "no-console": "warn",
+        "no-extra-semi": "error",
+        "no-irregular-whitespace": "error",
+        "space-before-function-paren": ["error", {
+            "anonymous": "always",
+            "named": "never",
+            "asyncArrow": "always"
+        }],
+        "comma-dangle": "error",
+        "indent": ["error", 4, {"SwitchCase": 1}],
+        "brace-style": ["error", "1tbs", {"allowSingleLine": true }],
+        "jsx-quotes": ["error", "prefer-double"],
+        "space-in-parens": ["error", "never"],
+        "object-curly-spacing": ["error", "never"],
+        "array-bracket-spacing": ["error", "never"],
+        "function-paren-newline": ["error", "consistent"],
+        "quotes": ["error", "single"],
+        "comma-spacing": ["error", { "before": false, "after": true }]
+    },
+    "globals": {
+        "window": true,
+        "document": true,
+        "alert": true,
+        "prompt": true,
+        "setInterval": true,
+        "clearInterval": true,
+        "setTimeout": true,
+        "clearTimeout": true,
+        "console": true,
+        "jest": true,
+        "XMLHttpRequest": true,
+        "fetch": true,
+        "browserHistory": true,
+        "appStore": true,
+        "SVGTransform": true,
+        "ServerInfo": true,
+        "test": true,
+        "it": true,
+        "describe": true,
+        "expect": true
+    },
+    "settings": {
+        "react":{
+            "version": "16.4.2"
+        }
+    }
+}
