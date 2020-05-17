@@ -4,7 +4,6 @@ const fs = require("fs");
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 
 const lessToJs = require('less-vars-to-js');
-const themeVariables = lessToJs(fs.readFileSync(path.join('styles', './ant-theme-vars.less'), 'utf8'));
 
 const index = new HtmlWebPackPlugin(
     {
@@ -63,7 +62,6 @@ const config = {
                     {
                         loader: "less-loader",
                         options: {
-                            modifyVars: themeVariables,
                             javascriptEnabled: true
                         }
                     }
