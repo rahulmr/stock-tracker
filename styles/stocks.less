@@ -33,7 +33,7 @@
     }
 
     .section-body{
-      max-height: 300px;
+      max-height: 400px;
       overflow-y: auto;
     }
     .section-item{
@@ -95,14 +95,51 @@
 }
 
 .site-layout-background{
-  padding: 25px 0px;
   .ant-layout-sider-zero-width-trigger{
     top: 25px;
   }
 }
 
 
-/*********************************************************************/
+/***************************  Custom Query Builder *********************************/
+
+
+
+.sectional-block{
+  border-left: 4px solid lightblue;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+.logical-block{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  .delete-btn{
+    margin-left: 20px;
+  }
+}
+.select-columns{
+  margin-top: 30px;
+  margin-bottom: 20px;
+  .query-column-select{
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+.query-build{
+  float: left;
+  .query-select-attribute{
+    width: 180px;
+  }
+  .query-select-mathop{
+    width: 80px;
+  }
+  .query-select-logicalOp{
+    width: 80px;
+    top: 20px;
+  }
+}
+/****************************************************************/
 
 @media screen and (max-width: 720px) {
 
@@ -120,6 +157,9 @@
         width: 80px;
       }
     }
+    .open-interest-btn{
+      display: none;
+    }
   }
 
 
@@ -132,6 +172,21 @@
           max-width: 90%;
           margin-left: -15px;
       }
+    }
+  }
+
+  .query-build{
+    margin-left: -30px;
+    font-size: 14px;
+  
+    .query-select-attribute{
+      width: 150px;
+    }
+    .query-select-mathop, .query-select-logicalOp, .ant-input-number{
+      width: 80px;
+    }
+    .logical-block .delete-btn{
+      margin-left: 10px;
     }
   }
 }

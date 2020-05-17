@@ -7,8 +7,8 @@ const mapStateToProps = (state, ownProps) => {
     const {sampleReducer = {}} = state;
     const {initData, dictDataFormat, dictSellerDataFormat, removedFromBuyers, removedFromSellers, 
         addedToBuyers, addedToSellers, openInterest, filterOpenInterest, onlyBuyersWithHighDemand, 
-        filterSuddenValueGainer, allStocksScripts, allVolatileStocks,
-        onlySellersWithHighDemand, recoverFilterData, filterFallFromHighData} = sampleReducer;
+        filterSuddenValueGainer, allStocksScripts, allVolatileStocks, mostActiveByValueAllStocks,
+        itemKeys, onlySellersWithHighDemand, recoverFilterData, filterFallFromHighData} = sampleReducer;
 
         
     const sharpReversalStocks = {
@@ -23,6 +23,11 @@ const mapStateToProps = (state, ownProps) => {
     const VolumeShockersStocks = {filterSuddenValueGainer, allVolatileStocks};
     const HugePriceChangersStocks = {recoverFilterData, filterFallFromHighData}
    
+    const QueryBuilderStocks = {
+        mostActiveByValueAllStocks,
+        itemKeys
+    };
+
     return {
         initData,
         screenType,
@@ -38,7 +43,8 @@ const mapStateToProps = (state, ownProps) => {
         },
         sharpReversalStocks,
         VolumeShockersStocks,
-        HugePriceChangersStocks
+        HugePriceChangersStocks,
+        QueryBuilderStocks
     };
 };
 

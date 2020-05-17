@@ -7,6 +7,9 @@ import {bindAll, isEmpty} from 'lodash';
 import SharpReversal from './stocksCategory/SharpReversal';
 import VolumeShockers from './stocksCategory/VolumeShockers';
 import HugePriceChangers from './stocksCategory/HugePriceChangers';
+import QueryBuilder from './stocksCategory/QueryBuilder';
+
+
 import {API_INTERVAL} from '../../consts/index';
 
 
@@ -122,7 +125,7 @@ class SubComponent extends React.Component {
 
     render() {
 
-        const {screenType = '', localDataStorage = {}, filterOpenInterest = {}, sharpReversalStocks = {}, VolumeShockersStocks = {}, HugePriceChangersStocks = {}} = this.props;
+        const {screenType = '', localDataStorage = {}, filterOpenInterest = {}, QueryBuilderStocks = {}, sharpReversalStocks = {}, VolumeShockersStocks = {}, HugePriceChangersStocks = {}} = this.props;
 
         const commonProps = {
             exchange: this.state.exchange,
@@ -134,7 +137,7 @@ class SubComponent extends React.Component {
             <div className="stock-data">
                 <div className="setting-config">
                     <div className="setting-items">Exchange Type: <AntSwitch checkedChildren="NSE" unCheckedChildren="BSE" defaultChecked checked={this.state.exchange === 'nse' ? true : false} onChange={this.changeExchange} /></div>
-                    <span className="setting-items"><Button onClick={this.resetAll}>Reset</Button></span>
+                    <span className="setting-items"><Button className="ant-btn ant-btn-primary" onClick={this.resetAll}>Reset</Button></span>
                     <div className="setting-items">
                         <div className="site-checkbox-all-wrapper">
                             <Checkbox
@@ -179,8 +182,12 @@ class SubComponent extends React.Component {
                     fetchFallFromHigh={this.props.fetchFallFromHigh}
                     hugePriceChanges={HugePriceChangersStocks}/>}
 
+                {screenType === 'QueryBuilder' && <QueryBuilder
+                    commonProps={commonProps}
+                    mostActiveByValue={this.props.mostActiveByValue}
+                    queryBuilderStocks={QueryBuilderStocks}/>}
 
-               
+
                 {/* {this.renderSectionOnObject('Open Interest Change', filterOpenInterest, 'Sudden Rise in Open Interest')} */}
 
                 {/* {filterOpenInterest && filterOpenInterest.map((value, key) => {

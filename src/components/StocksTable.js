@@ -59,8 +59,9 @@ class StocksTable extends React.Component {
     onRowClick(stockitem) {
         this.setState({stockitem, showModal: true});
     }
+
     render() {
-        let {sectionData = [], param, sectionTitle= '', info = ''} = this.props;
+        let {sectionData = [], param, sectionTitle= '', info = '', columns} = this.props;
         const {stockitem = {}} = this.state;
         if(isEmpty(sectionData)) {
             return null;
@@ -69,7 +70,7 @@ class StocksTable extends React.Component {
             const {updatedDateTime = ''} = item;
             return {...item, updatedDateTime: updatedDateTime.split('|')[0]};
         });
-        const columns = [
+        const defaultcolumns = [
             {
                 title: 'Company Name',
                 dataIndex: 'companyName',
@@ -98,7 +99,7 @@ class StocksTable extends React.Component {
             }
         ];
         if(param) {
-            columns.push({
+            defaultcolumns.push({
                 title: param,
                 dataIndex: param,
                 key: param,
@@ -120,7 +121,7 @@ class StocksTable extends React.Component {
                         };
                     }}
                     dataSource={sectionData}
-                    columns={columns}
+                    columns={columns || defaultcolumns}
                     pagination={sectionData.length > 10}/>
                 <Modal
                     className="field-properties-modal"

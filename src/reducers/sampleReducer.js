@@ -271,11 +271,13 @@ export default function sampleReducer(alias, initialState = {}) {
                 });
             case `${MOST_ACTIVE_BY_VALUE}${SUCCESS}`:
                 var suddenValueChange = suddenChangeInValue(action.payload, state);
+                var itemKeys = Object.keys(action.payload.searchresult[0]);
                 return Object.assign({}, {
                     ...state,
                     loading: false,
-                    ...suddenValueChange
-                    // mostActiveByValueAllStocks: action.payload
+                    ...suddenValueChange,
+                    mostActiveByValueAllStocks: action.payload,
+                    itemKeys
                 });
             default:
                 return state;

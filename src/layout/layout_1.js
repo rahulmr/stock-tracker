@@ -21,7 +21,8 @@ class Layout1 extends React.Component {
             menuConf: {
                 'SharpReversal': 'Sharp Reversal',
                 'VolumeShockers': 'Volume Shockers',
-                'PricerChangers': 'Huge Price Changers'
+                'PricerChangers': 'Huge Price Changers',
+                'QueryBuilder': 'Query Builder'
                 // '3': {
                 //     'title': 'Price Based',
                 //     'icon': 'dashboard',
