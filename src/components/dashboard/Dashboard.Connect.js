@@ -1,12 +1,13 @@
 import {connect} from 'react-redux';
 import Dashboard from './Dashboard';
-import {fetchInitData, fetchOnlyBuyers, fetchOnlySellers, openInterest, fetchRecoverFromLow, fetchFallFromHigh, mostActiveByValue} from '../../actions/sampleAction';
+import {fetchInitData, fetchOnlyBuyers, fetchOnlySellers, openInterest, fetchRecoverFromLow, fetchFallFromHigh, resetApp, mostActiveByValue} from '../../actions/sampleAction';
 import {withRouter} from 'react-router-dom';
 const mapStateToProps = (state) => {
     const {sampleReducer = {}} = state;
     const {initData, dictDataFormat, dictSellerDataFormat, removedFromBuyers, removedFromSellers, 
         addedToBuyers, addedToSellers, openInterest, filterOpenInterest, onlyBuyersWithHighDemand, 
-        filterSuddenValueGainer, allStocksScripts, allVolatileStocks,
+        filterSuddenValueGainer, allStocksScripts, allVolatileStocks, totalTradedValue, 
+        extremeSuddenBuy, extremeSuddenSell, myHoldings, fallInYear,
         onlySellersWithHighDemand, recoverFilterData, filterFallFromHighData} = sampleReducer;
 
     const localStoreData = {
@@ -19,8 +20,13 @@ const mapStateToProps = (state) => {
         onlyBuyersWithHighDemand,
         onlySellersWithHighDemand,
         filterFallFromHighData,
-        filterSuddenValueGainer, 
-        allVolatileStocks
+        filterSuddenValueGainer,
+        totalTradedValue,
+        allVolatileStocks,
+        myHoldings,
+        fallInYear,
+        extremeSuddenBuy,
+        extremeSuddenSell
     };
         
     return {
@@ -52,6 +58,9 @@ const mapDispatchToProps = (dispatch) => {
         },
         mostActiveByValue: (payload) => {
             dispatch(mostActiveByValue(payload));
+        },
+        resetApp: () => {
+            dispatch(resetApp());
         },
         openInterest: (payload) => {
             dispatch(openInterest(payload));

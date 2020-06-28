@@ -17,8 +17,8 @@ class App extends Component {
                 <Router>
                     <div>
                         <Switch>
-                            <Route exact path="/" render={(props) => <Layout1 {...props} />} />
-                            <Route exact path="/dashboard" render={(props) => <Dashboard {...props} />} />
+                            <Route exact path="/" render={(props) => <Dashboard {...props} />} />\
+                            <Route exact path="/dashboard" render={(props) => <Layout1 {...props} />} />
                         </Switch>
                     </div>
                 </Router>

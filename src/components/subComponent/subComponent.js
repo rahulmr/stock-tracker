@@ -1,30 +1,33 @@
 import React from 'react';
-import {Form, Button, Switch as AntSwitch, Table, Checkbox, InputNumber} from 'antd';
+import {Form, Button, Switch as AntSwitch, Table, Checkbox, InputNumber, Select} from 'antd';
 
 import PropTypes from 'prop-types';
 import {bindAll, isEmpty} from 'lodash';
 
 import SharpReversal from './stocksCategory/SharpReversal';
 import VolumeShockers from './stocksCategory/VolumeShockers';
+
+import TowardOnlyBuyers from './stocksCategory/TowardOnlyBuyers';
+
 import HugePriceChangers from './stocksCategory/HugePriceChangers';
 import QueryBuilder from './stocksCategory/QueryBuilder';
 
 
 import {API_INTERVAL} from '../../consts/index';
 
-
+const Option = Select.Option;
 const CheckboxGroup = Checkbox.Group;
 const plainOptions = ['largecap', 'midcap', 'smallcap'];
 
 class SubComponent extends React.Component {
     constructor(props) {
         super(props);
-        bindAll(this, ['fetchOpenInterest', 'changeExchange', 'resetAll', 
+        bindAll(this, ['fetchOpenInterest', 'changeExchange', 'resetAll',
             'onCheckAllChange', 'onMarketCapChange', 'excecuteInInterval']);
         this.count = 0;
         this.timer = null;
         this.state = {
-            exchange: 'nse',
+            exchange: 'nse,bse',
             // marketCap: ['largecap','midcap','smallcap'],
             checkedList: plainOptions,
             indeterminate: true,
@@ -32,6 +35,7 @@ class SubComponent extends React.Component {
             minprice: 0,
             maxprice: 10000
         };
+        this.mySCROPT = null
     }
 
     onMarketCapChange(checkedList) {
@@ -40,20 +44,22 @@ class SubComponent extends React.Component {
             indeterminate: !!checkedList.length && checkedList.length < plainOptions.length,
             checkAll: checkedList.length === plainOptions.length
         });
-    };
+    }
 
     resetAll() {
         localStorage.removeItem('stockdata');
+        localStorage.removeItem('historyData');
+        localStorage.removeItem('currentState');
         this.props.resetApp();
     }
-    
+
     onCheckAllChange(e) {
         this.setState({
             checkedList: e.target.checked ? plainOptions : [],
             indeterminate: false,
             checkAll: e.target.checked
         });
-    };
+    }
 
     changeExchange() {
         const toggleExhange = this.state.exchange === 'nse' ? 'bse' : 'nse';
@@ -61,7 +67,9 @@ class SubComponent extends React.Component {
     }
 
     componentDidMount() {
+     
         this.excecuteInInterval();
+        this.props.mostActiveByValue({exchange: 'nse', minprice: 0, maxprice: 100000});
         this.timer = setInterval(() => {
             this.excecuteInInterval();
         }, API_INTERVAL);
@@ -125,8 +133,12 @@ class SubComponent extends React.Component {
 
     render() {
 
-        const {screenType = '', localDataStorage = {}, filterOpenInterest = {}, QueryBuilderStocks = {}, sharpReversalStocks = {}, VolumeShockersStocks = {}, HugePriceChangersStocks = {}} = this.props;
+        const {screenType = '', localDataStorage = {}, filterOpenInterest = {}, totalTradedValue,
+        QueryBuilderStocks = {}, sharpReversalStocks = {}, VolumeShockersStocks = {}, 
+        HugePriceChangersStocks = {}} = this.props;
 
+        const {allStocksScripts = {}} = VolumeShockersStocks;
+        
         const commonProps = {
             exchange: this.state.exchange,
             marketCap: this.state.checkedList.toString(),
@@ -157,21 +169,43 @@ class SubComponent extends React.Component {
                     <div className="setting-items">
                         Min: <InputNumber value={this.state.minprice} min={0} max={100000} defaultValue={3} onChange={(val) => this.setState({minprice: val})} />
                     </div>
-                    <div className="setting-items">    
+                    <div className="setting-items">
                         Max: <InputNumber value={this.state.maxprice} min={0} max={100000} defaultValue={3} onChange={(val) => this.setState({maxprice: val})} />
                     </div>
-                    
+
                     <span className="open-interest-btn"><Button onClick={this.fetchOpenInterest}>Fetch Open Interest</Button></span>
                 </div>
 
-
+                <div>
+                    <Select
+                        showSearch
+                        className="query-select-attribute"
+                        value={this.state.tradeTicker}
+                        placeholder="Select an attribute"
+                        optionFilterProp="key"
+                        onChange={(val) => this.setState({tradeTicker: val})}
+                        filterOption={(input, option) =>
+                            option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }>
+                        {Object.keys(allStocksScripts).map((item) => <Option key={item} value={item}>{item}</Option>)}
+                    </Select>
+                    QTY: <InputNumber value={this.state.tradeQty} defaultValue={1} onChange={(val) => this.setState({tradeQty: val})} />
+                   
+                </div>  
+                <div>Total Traded Value - {totalTradedValue} </div>
                 {screenType === 'SharpReversal' && <SharpReversal
                     commonProps={commonProps}
                     fetchOnlyBuyers={this.props.fetchOnlyBuyers}
+                    filterOpenInterest={filterOpenInterest}
                     fetchOnlySellers={this.props.fetchOnlySellers}
                     sharpReversal={sharpReversalStocks}/>}
 
                 {screenType === 'VolumeShockers' && <VolumeShockers
+                    commonProps={commonProps}
+                    mostActiveByValue={this.props.mostActiveByValue}
+                    volumeShockers={VolumeShockersStocks}/>}
+                
+                {screenType === 'TowardOnlyBuyers' && <TowardOnlyBuyers
                     commonProps={commonProps}
                     mostActiveByValue={this.props.mostActiveByValue}
                     volumeShockers={VolumeShockersStocks}/>}
@@ -188,12 +222,10 @@ class SubComponent extends React.Component {
                     queryBuilderStocks={QueryBuilderStocks}/>}
 
 
-                {/* {this.renderSectionOnObject('Open Interest Change', filterOpenInterest, 'Sudden Rise in Open Interest')} */}
-
-                {/* {filterOpenInterest && filterOpenInterest.map((value, key) => {
-                    return (<div key={value['Increase(%)']}>
-                        <span>{key}</span>
-                        <span>{value['Increase(%)']}</span>
+                {/* {filterOpenInterest && Object.keys(filterOpenInterest).map((key) => {
+                    return (<div key={filterOpenInterest[key]['Increase(%)']}>
+                        <span>{filterOpenInterest[key]}</span>
+                        <span>{filterOpenInterest[key]['Increase(%)']}</span>
                     </div>);
                 })} */}
             </div>

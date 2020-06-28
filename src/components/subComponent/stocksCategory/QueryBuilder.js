@@ -23,7 +23,8 @@ class QueryBuilder extends React.Component {
                 attribute: '',
                 mathOperator: '',
                 value: '',
-                logicalOperator: ''
+                logicalOperator: '',
+                attribute2: ''
             },
             columns: null,
             selectedColumns: [],
@@ -62,9 +63,9 @@ class QueryBuilder extends React.Component {
                 let finalOp = '';
                 block.forEach((expression, index) => {
                     if(index !== block.length-1) {
-                        logicalExp += `item['${expression.attribute}'] ${expression.mathOperator} ${parseFloat(expression.value, 10)} ${expression.logicalOperator} `;
+                        logicalExp += `item['${expression.attribute}'] ${expression.mathOperator} ${parseFloat(expression.value || item[expression.attribute2].current, 10)} ${expression.logicalOperator} `;
                     } else {
-                        logicalExp += `item['${expression.attribute}'] ${expression.mathOperator} ${parseFloat(expression.value, 10)})`;
+                        logicalExp += `item['${expression.attribute}'] ${expression.mathOperator} ${parseFloat(expression.value || item[expression.attribute2].current, 10)})`;
                         finalOp = ` ${expression.logicalOperator}`;
                     }
                 });
@@ -188,6 +189,18 @@ class QueryBuilder extends React.Component {
                 }>
                 {ArithOperators && ArithOperators.map((item) => <Option key={item} value={item}>{item}</Option>)}
             </Select>
+            <Select
+                showSearch
+                className="query-select-attribute"
+                value={item.attribute2}
+                placeholder="Select an attribute"
+                optionFilterProp="key"
+                onChange={(e) => this.onAttributeChange(e, index, 'attribute2', sectionalIndex)}
+                filterOption={(input, option) =>
+                    option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }>
+                {QUERY_ATTRIBUTES && QUERY_ATTRIBUTES.map((item) => <Option key={item} value={item}>{item}</Option>)}
+            </Select> OR
             <InputNumber value={item.value} min={0} max={10000000} defaultValue={0} onChange={(e) => this.onAttributeChange(e, index, 'value', sectionalIndex)} />
             <Select
                 showSearch
@@ -248,7 +261,7 @@ class QueryBuilder extends React.Component {
                     </div>
 
                     {/* {this.renderSectionOnObject('Sudden value shocker', filterSuddenValueGainer, 'Sudden Rise in Demand')}
-                    {this.renderSectionOnArray('All volatile Stocks', allVolatileStocks, '', 'percentChange')}       */}
+                    {this.renderSectionOnArray('All volatile Stocks', allVolatileStocks, '', 'buyToSellRatio')}       */}
                     {/* Sudden change in volume percentage(300) & price -- Most active by volume API  --- Call this api every 5 mins */}
                     {/* Change in bestBuyQty - Indicates sudden change in open interest */}
                 </div>

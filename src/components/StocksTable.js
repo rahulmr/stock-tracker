@@ -46,7 +46,7 @@ class StocksTable extends React.Component {
         ];
         return (
             <div>
-                
+
                 <Table
                     dataSource={tableData}
                     columns={columns}
@@ -89,6 +89,12 @@ class StocksTable extends React.Component {
                 dataIndex: 'totalTradedValue',
                 key: 'totalTradedValue',
                 sorter: (a, b) => a.totalTradedValue - b.totalTradedValue
+            },
+            {
+                title: 'Percent Change',
+                dataIndex: 'percentChange',
+                key: 'percentChange',
+                sorter: (a, b) => a.percentChange - b.percentChange
             },
             {
                 title: 'Last Updated Time',

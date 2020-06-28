@@ -22,12 +22,9 @@ class Layout1 extends React.Component {
                 'SharpReversal': 'Sharp Reversal',
                 'VolumeShockers': 'Volume Shockers',
                 'PricerChangers': 'Huge Price Changers',
-                'QueryBuilder': 'Query Builder'
-                // '3': {
-                //     'title': 'Price Based',
-                //     'icon': 'dashboard',
-                //     'subItems': {'4': 'Low To High', '5': 'High to Low'}
-                // }
+                'QueryBuilder': 'Query Builder',
+                'TowardOnlyBuyers': 'Toward Only Buyers',
+                'TowardOnlySellers': 'Toward Only Sellers'
             }
         };
         bindAll(this, ['onCollapse', 'setCurrentContent', 'createMenuItems']);
@@ -56,22 +53,24 @@ class Layout1 extends React.Component {
     }
 
     render() {
+        
+        const {history} = this.props;
         return (
             <Layout>
                 <Header className="header">
                     <div className="logo" />
                     <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']}>
-                        <Menu.Item key="1">Home</Menu.Item>
-                        <Menu.Item key="2">Dashboard</Menu.Item>
-                        <Menu.Item key="3">About App</Menu.Item>
+                        <Menu.Item key="1" onClick={() => { history.push('/');}}>Home</Menu.Item>
+                        <Menu.Item key="2" onClick={() => { history.push('/dashboard');}}>Full Screen</Menu.Item>
+                        {/* <Menu.Item key="3">About App</Menu.Item> */}
                     </Menu>
                 </Header>
                 <Content className="layout-main-content">
-                    <Breadcrumb style={{ margin: '16px 0' }}>
+                    {/* <Breadcrumb style={{ margin: '16px 0' }}>
                         <Breadcrumb.Item>Home</Breadcrumb.Item>
                         <Breadcrumb.Item>List</Breadcrumb.Item>
                         <Breadcrumb.Item>App</Breadcrumb.Item>
-                    </Breadcrumb>
+                    </Breadcrumb> */}
                     <Layout className="site-layout-background">
                         {/* <Sider className="site-layout-background" width={200}> */}
                         <Sider

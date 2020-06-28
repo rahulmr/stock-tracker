@@ -4,6 +4,8 @@ const stockInitState = {
     addedToBuyers: {},
     removedFromBuyers: {},
     filterSuddenValueGainer: {},
+    extremeSuddenBuy: {},
+    extremeSuddenSell: {},
     removedFromSellers: {},
     recoverFilterData: [],
     filterFallFromHighData: [],
