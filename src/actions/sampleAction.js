@@ -1,7 +1,7 @@
 import * as actions from './actionTypes';
 
 export function fetchInitData(data) {
-    return {type: actions.LOAD_INIT_DATA, payload: data};
+    return {type: actions.LOAD_OPEN_INTEREST, payload: data};
 }
 
 export function fetchOnlyBuyers(data) {
@@ -16,13 +16,19 @@ export function openInterest(data) {
     return {type: actions.SET_OPEN_INTEREST, payload: data};
 }
 
-export function fetchRecoverFromLow(data) {
-    return {type: actions.RECOVER_FROM_LOW, payload: data};
+export function updateSelectedStocks(data) {
+    return {type: actions.UPDATE_SELECTED_STOCKS, payload: data};
 }
 
-export function fetchFallFromHigh(data) {
-    return {type: actions.FALL_FROM_HIGH, payload: data};
+export function trackStocks(trackSelected) {
+    return {type: actions.TRACK_SELECTED_STOCKS, payload: trackSelected};
 }
+
+export function updateRefreshRate(refreshRate)  {
+    return {type: actions.UPDATE_REFRESH_RATE, payload: refreshRate};
+}
+
+
 
 export function resetApp() {
     return {type: actions.RESET_APP};
@@ -33,21 +39,13 @@ export function mostActiveByValue(data) {
 }
 
 export function fetchInitDataSuccessful(data) {
-    return {type: `${actions.LOAD_INIT_DATA}${actions.API_SUFFIX.SUCCESS}`, payload: data};
+    return {type: `${actions.LOAD_OPEN_INTEREST}${actions.API_SUFFIX.SUCCESS}`, payload: data};
 }
 
 export function fetchOnlyBuyersSuccessful(data) {
     if(data.status !== 'error') {
         return {type: `${actions.FETCH_ONLY_BUYERS}${actions.API_SUFFIX.SUCCESS}`, payload: data};
     }
-}
-
-export function recoverFromLowSuccessful(data) {
-    return {type: `${actions.RECOVER_FROM_LOW}${actions.API_SUFFIX.SUCCESS}`, payload: data};
-}
-
-export function fallFromHighSuccessful(data) {
-    return {type: `${actions.FALL_FROM_HIGH}${actions.API_SUFFIX.SUCCESS}`, payload: data};
 }
 
 

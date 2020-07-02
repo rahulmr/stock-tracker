@@ -6,63 +6,88 @@
 
   .setting-config {
     width: 100%;
-    height: 50px;
+    border-bottom: 3px solid black;
     .setting-items{
       float: left;
       margin-right: 30px;
     }
+    .duration{
+      margin-top: 20px;
+    }
   }
 
-
-  .sections{
-    min-width: 350px;
-    width: 45%; 
+  .tables-containers{
+    background-color: #222;
+    color: #ccc;
     float: left;
-    margin: 1% ;
-    margin-top: 20px;
-    border: 1px solid black;
-    min-height: 450px;
-
-    .sections:nth-child(odd) {
-      clear: both;
+    .ant-table-tbody > tr > td, h1, h2, h3, h4, h5, h6{
+      color: #ccc;
     }
 
-    .section-header {
-      border-bottom: 2px solid black;
-      padding: 10px;
-      .stock-signify{
-        font-size: 12px;
-        margin-left: 20px;
+    .sections{
+      min-width: 350px;
+      width: 45%; 
+      float: left;
+      margin: 1% ;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      min-height: 450px;
+  
+      .sections:nth-child(odd) {
+        clear: both;
+      }
+  
+      .section-header {
+        border-bottom: 2px solid black;
+        padding: 10px;
+        .stock-signify{
+          font-size: 12px;
+          margin-left: 20px;
+        }
+      }
+
+      .stocks-select {
+        width: 100%;
+      }
+  
+      .section-body{
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .section-item{
+        margin-top: 10px;
+        padding: 0px 10px;
+      }
+      
+    }
+  
+   
+
+    .money-control-OI{
+      clear: both;
+      .OI_items {
+        clear: both;
+        div {
+          margin-right: 25px;
+          width: 150px;
+          float: left;
+        }
       }
     }
-
-    .section-body{
-      max-height: 400px;
-      overflow-y: auto;
+  
+    .open-interest-btn {
+      margin-left: 10px;
     }
-    .section-item{
-      margin-top: 10px;
-      padding: 0px 10px;
-    }
-    
-  }
 
-  .money-control-OI{
-    clear: both;
-    .OI_items {
+   
+    .compare-saved-state{
       clear: both;
-      div {
-        margin-right: 25px;
-        width: 150px;
-        float: left;
-      }
+      border-top: 2px solid;
+      padding: 20px;
+      border-bottom: 2px solid;
     }
   }
 
-  .open-interest-btn{
-    float: right;
-    margin-right: 20px;
-  }
 }
 
 .ant-table-thead > tr > th, .ant-table-tbody > tr > td{

@@ -1,6 +1,6 @@
 import {connect} from 'react-redux';
 import SubComponent from './subComponent';
-import {fetchInitData, fetchOnlyBuyers, fetchOnlySellers, openInterest, fetchRecoverFromLow, fetchFallFromHigh, resetApp, mostActiveByValue} from '../../actions/sampleAction';
+import {fetchInitData, fetchOnlyBuyers, fetchOnlySellers, openInterest, resetApp, mostActiveByValue} from '../../actions/sampleAction';
 import {withRouter} from 'react-router-dom';
 const mapStateToProps = (state, ownProps) => {
     const {screenType = ''} = ownProps;
@@ -8,7 +8,7 @@ const mapStateToProps = (state, ownProps) => {
     const {initData, dictDataFormat, dictSellerDataFormat, removedFromBuyers, removedFromSellers, 
         addedToBuyers, addedToSellers, openInterest, filterOpenInterest, onlyBuyersWithHighDemand, 
         filterSuddenValueGainer, allStocksScripts, allVolatileStocks, mostActiveByValueAllStocks, totalTradedValue,
-        itemKeys, onlySellersWithHighDemand, recoverFilterData, filterFallFromHighData} = sampleReducer;
+        itemKeys, onlySellersWithHighDemand} = sampleReducer;
 
         
     const sharpReversalStocks = {
@@ -21,8 +21,7 @@ const mapStateToProps = (state, ownProps) => {
     };
 
     const VolumeShockersStocks = {filterSuddenValueGainer, allVolatileStocks, allStocksScripts};
-    const HugePriceChangersStocks = {recoverFilterData, filterFallFromHighData}
-   
+    
     const QueryBuilderStocks = {
         mostActiveByValueAllStocks,
         itemKeys
@@ -39,12 +38,10 @@ const mapStateToProps = (state, ownProps) => {
         openInterest,
         localDataStorage: {
             ...sharpReversalStocks,
-            ...VolumeShockersStocks,
-            ...HugePriceChangersStocks
+            ...VolumeShockersStocks
         },
         sharpReversalStocks,
         VolumeShockersStocks,
-        HugePriceChangersStocks,
         QueryBuilderStocks
     };
 };
@@ -59,12 +56,6 @@ const mapDispatchToProps = (dispatch) => {
         },
         fetchOnlySellers: (payload) => {
             dispatch(fetchOnlySellers(payload));
-        },
-        fetchRecoverFromLow: (payload) => {
-            dispatch(fetchRecoverFromLow(payload));
-        },
-        fetchFallFromHigh: (payload) => {
-            dispatch(fetchFallFromHigh(payload));  
         },
         mostActiveByValue: (payload) => {
             dispatch(mostActiveByValue(payload));

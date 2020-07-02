@@ -9,7 +9,7 @@ const economicTimesBaseURL = "https://etmarketsapis.indiatimes.com/ET_Stats";
 
 const commonQueryParam = {
     pageno: 1,
-    pagesize: 300
+    pagesize: 5000
 };
 
 const getQueryParams = (parameters) => {
@@ -45,31 +45,6 @@ const fetchOnlySellersApi$ = (queryParam) => {
     return http.get(economicTimesBaseURL + '/onlyseller', queryParams).pipe(simpleMapPipe);
 };
 
-const fetchRecoverFromLowApi$ = (queryParam) => {
-    let queryParams = {
-        ...commonQueryParam,
-        sortby: 'aboveDaysLowPerChange',
-        sortorder: 'desc',
-        service: 'intradaylow',
-        ...queryParam
-    };
-    queryParams = getQueryParams(queryParams);
-    return http.get(economicTimesBaseURL + '/recoveryfromlow', queryParams).pipe(simpleMapPipe);
-};
-
-const fetchFallFromHighApi$ = (queryParam) => {
-    let queryParams = {
-        ...commonQueryParam,
-        sortby: 'belowDaysHighPerChange',
-        sortorder: 'asc',
-        service: 'intradayhigh',
-        ...queryParam
-    };
-    queryParams = getQueryParams(queryParams);
-    return http.get(economicTimesBaseURL + '/fallfromhigh', queryParams).pipe(simpleMapPipe);
-};
-
-
 const fetchActiveByValueApi$ = (queryParam) => {
     let queryParams = {
         ...commonQueryParam,
@@ -83,13 +58,9 @@ const fetchActiveByValueApi$ = (queryParam) => {
 };
 
 
-
-
 export {
     fetchOpenInterestApi$,
     fetchOnlyBuyersApi$,
     fetchOnlySellersApi$,
-    fetchRecoverFromLowApi$,
-    fetchFallFromHighApi$,
     fetchActiveByValueApi$
 };

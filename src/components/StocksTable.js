@@ -61,7 +61,7 @@ class StocksTable extends React.Component {
     }
 
     render() {
-        let {sectionData = [], param, sectionTitle= '', info = '', columns} = this.props;
+        let {sectionData = [], param, sectionTitle= '', info = '', columns, additionalCols = []} = this.props;
         const {stockitem = {}} = this.state;
         if(isEmpty(sectionData)) {
             return null;
@@ -101,8 +101,36 @@ class StocksTable extends React.Component {
                 dataIndex: 'updatedDateTime',
                 key: 'updatedDateTime',
                 defaultSortOrder: 'descend',
-                sorter: (a, b) => new Date(a.updatedDateTime) > new Date(b.updatedDateTime) ? 1 : -1
-            }
+                sorter: (a, b) => new Date(`${(new Date()).toLocaleDateString()} ${a.updatedDateTime}`).getTime() > new Date(`${(new Date()).toLocaleDateString()} ${b.updatedDateTime}`).getTime() ? 1 : -1
+            }, 
+            // {
+            //     title: 'Action',
+            //     key: 'action',
+            //     width: '100px',
+            //     render: (text, record) => (
+            //         <div>
+
+            //             <kite-button href="#" data-kite="l96dkdptji64q5ds"
+            //                 data-exchange="NSE"
+            //                 class="kite-buy"
+            //                 title="Buy"
+            //                 data-tradingsymbol={record.ticker}
+            //                 data-transaction_type="BUY"
+            //                 data-quantity="1"
+            //                 data-order_type="LIMIT"
+            //                 data-price="100">Buy</kite-button>
+            //             <kite-button href="#" data-kite="l96dkdptji64q5ds"
+            //                 class="kite-sell"
+            //                 title="Sell"
+            //                 data-exchange="NSE"
+            //                 data-tradingsymbol={record.ticker}
+            //                 data-transaction_type="SELL"
+            //                 data-quantity="1"
+            //                 data-order_type="LIMIT"
+            //                 data-price="100">SELL</kite-button>
+            //         </div>
+            //     )
+            // }
         ];
         if(param) {
             defaultcolumns.push({
@@ -113,6 +141,15 @@ class StocksTable extends React.Component {
                 sorter: (a, b) => a[param] - b[param]
             });
         }
+        additionalCols.forEach((item) => {
+            defaultcolumns.push({
+                title: item,
+                dataIndex: item,
+                key: item,
+                defaultSortOrder: 'descend',
+                sorter: (a, b) => a[item] - b[item]
+            });
+        })
 
 
         return(<div className="sections">

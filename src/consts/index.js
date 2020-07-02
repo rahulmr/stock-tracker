@@ -1,6 +1,6 @@
 export const ERROR_STATUS = 'error';
 
-export const API_INTERVAL = 60000;
+export const API_INTERVAL = 40000;
 
 export const QUERY_ATTRIBUTES = ['bestBuyQty', 'fiftyTwoWeekLowPrice', 'absoluteChange', 'companyId', 'value', 'current', 'companyTypeId', 'bargraphValue', 'bestBuyPrice', 'bestSellQty', 'volumeInThousand', 'fiftyTwoWeekHighPrice', 'percentChange', 'volume', 'high', 'low',
     'bestSellPrice', 'highPercentGap', 'lowPercentGap', 'belowDaysHigh', 'belowDaysHighPerChange', 'aboveDaysLow',

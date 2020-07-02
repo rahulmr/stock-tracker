@@ -1,14 +1,15 @@
 import {connect} from 'react-redux';
 import Dashboard from './Dashboard';
-import {fetchInitData, fetchOnlyBuyers, fetchOnlySellers, openInterest, fetchRecoverFromLow, fetchFallFromHigh, resetApp, mostActiveByValue} from '../../actions/sampleAction';
+import {fetchInitData, fetchOnlyBuyers, fetchOnlySellers, openInterest, trackStocks, updateRefreshRate,
+    updateSelectedStocks, resetApp, mostActiveByValue} from '../../actions/sampleAction';
 import {withRouter} from 'react-router-dom';
 const mapStateToProps = (state) => {
     const {sampleReducer = {}} = state;
     const {initData, dictDataFormat, dictSellerDataFormat, removedFromBuyers, removedFromSellers, 
         addedToBuyers, addedToSellers, openInterest, filterOpenInterest, onlyBuyersWithHighDemand, 
         filterSuddenValueGainer, allStocksScripts, allVolatileStocks, totalTradedValue, 
-        extremeSuddenBuy, extremeSuddenSell, myHoldings, fallInYear,
-        onlySellersWithHighDemand, recoverFilterData, filterFallFromHighData} = sampleReducer;
+        extremeSuddenBuy, extremeSuddenSell, myHoldings, fallInYear, selectedStocks,
+        onlySellersWithHighDemand, trackSelectedStocks, refreshRate} = sampleReducer;
 
     const localStoreData = {
         addedToBuyers,
@@ -16,17 +17,18 @@ const mapStateToProps = (state) => {
         removedFromSellers,
         addedToSellers,
         filterOpenInterest,
-        recoverFilterData,
         onlyBuyersWithHighDemand,
         onlySellersWithHighDemand,
-        filterFallFromHighData,
         filterSuddenValueGainer,
         totalTradedValue,
         allVolatileStocks,
         myHoldings,
         fallInYear,
+        selectedStocks,
         extremeSuddenBuy,
-        extremeSuddenSell
+        extremeSuddenSell,
+        refreshRate,
+        trackSelectedStocks
     };
         
     return {
@@ -50,12 +52,6 @@ const mapDispatchToProps = (dispatch) => {
         fetchOnlySellers: (payload) => {
             dispatch(fetchOnlySellers(payload));
         },
-        fetchRecoverFromLow: (payload) => {
-            dispatch(fetchRecoverFromLow(payload));
-        },
-        fetchFallFromHigh: (payload) => {
-            dispatch(fetchFallFromHigh(payload));  
-        },
         mostActiveByValue: (payload) => {
             dispatch(mostActiveByValue(payload));
         },
@@ -64,6 +60,15 @@ const mapDispatchToProps = (dispatch) => {
         },
         openInterest: (payload) => {
             dispatch(openInterest(payload));
+        },
+        updateSelectedStocks: (payload) => {
+            dispatch(updateSelectedStocks(payload));
+        },
+        trackStocks: (selectedStocks) => {
+            dispatch(trackStocks(selectedStocks));
+        },
+        updateRefreshRate: (refreshRate) => {
+            dispatch(updateRefreshRate(refreshRate));
         }
     };
 };

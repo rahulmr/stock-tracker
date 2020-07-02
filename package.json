@@ -1,6 +1,7 @@
 {
-  "homepage": "https://amonaval.github.io/stock-tracker",
+  
   "name": "stock-tracker-app",
+  "homepage": "https://amonaval.github.io/stock-tracker",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -69,6 +70,7 @@
     "startDev": "webpack-dev-server --mode development --open",
     "startTest": "webpack-dev-server --mode development --port 8080 --hot --host 172.20.8.142 --open",
     "startProd": "webpack-dev-server --mode production --open",
+    "start": "webpack-dev-server --mode production --open",
     "clearFolder": "node ./node_scripts/clearFolder.js",
     "clearDist": "npm run clearFolder ./dist",
     "lint": "node ./node_modules/eslint/bin/eslint.js ./src && node ./node_modules/eslint/bin/eslint.js ./test",

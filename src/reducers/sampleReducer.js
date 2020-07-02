@@ -4,18 +4,13 @@ import {func} from 'prop-types';
 
 import stockInitState from '../initialState/stockState';
 
-import {LOAD_INIT_DATA, API_SUFFIX, FETCH_ONLY_BUYERS, FALL_FROM_HIGH, MOST_ACTIVE_BY_VALUE,
-    FETCH_ONLY_SELLERS, SET_OPEN_INTEREST, RECOVER_FROM_LOW, RESET_APP} from '../actions/actionTypes';
+import {LOAD_OPEN_INTEREST, API_SUFFIX, FETCH_ONLY_BUYERS, MOST_ACTIVE_BY_VALUE, UPDATE_SELECTED_STOCKS,
+    FETCH_ONLY_SELLERS, SET_OPEN_INTEREST, RESET_APP, TRACK_SELECTED_STOCKS, UPDATE_REFRESH_RATE} from '../actions/actionTypes';
 import {isEmpty} from 'rxjs-compat/operator/isEmpty';
 
 const {SUCCESS} = API_SUFFIX;
 
 
-const MY_HOLDING = ['LASA', 'VARROC', 'USHAMART', 'HDIL', 'L&TFH', 'JAGRAN', 
- 'ADANITRANS', 'CHOLAFIN', 'REPCOHOME', 'HSCL', 'SBIN', 'ICICIBANK', 'BHEL', 'SPAL', 'WELCORP',
-'MAGMA', 'JKIL', 'CONFIPET', 'AVONMORE', 'SHAILY', 'ZENTEC', 'BANKINDIA', 'AUBANK', 'TATASTLBSL',
-'CANBK', 'TECHNOFAB', 'ACE', 'BALPHARMA', 'WESTLIFE', 'JIYAECO', 'PRAJIND', 'ONGC', 'HTMEDIA',
-'THOMASCOOK', 'SYNCOMF', 'DBCORP', 'RECLTD', 'SHRIRAMEPC', 'RADIOCITY', 'SAFARIND'];
 
 const filterOpenInterestUtil = function filterOpenInterestUtil(allOIMap, state) {
     let myMap = {};
@@ -38,9 +33,10 @@ const priceVolumeCriteria = function priceVolumeCriteria(type, item) {
     //     }
     //     // return true;
     // }
-    if(totalTradedValue > 0.02) {
+    if(totalTradedValue > 0.06 || (type === 'gain' && bestBuyQty*current > 300000) || (type === 'loss' && bestSellQty*current > 300000)) {
         return true;
     }
+  
     return false;
 };
 
@@ -53,7 +49,8 @@ const extractRelevantParams = function extractRelevantParams(item) {
         volume: item.volume,
         percentChange: item.percentChange,
         totalTradedValue: item.totalTradedValue,
-        ticker: item.ticker
+        ticker: item.ticker,
+        companyId: item.companyId
     };
 };
 
@@ -61,28 +58,31 @@ const filterBuyersDataFun = function filterBuyersData(buyersData, state) {
     let {searchresult = []} = buyersData;
 
     // searchresult.splice(Math.random()*buyersData.pagesummary.totalRecords, 1);
+    
 
-    const {dictDataFormat = {}} = state;
+    const {dictDataFormat = {}, trackSelectedStocks, selectedStocks = []} = state;
     // const dataLen = pagesummary.totalRecords;
     let removedFromBuyers = {};
     let addedToBuyers = {};
     let latestDictDataFormat = {};
 
-    let onlyBuyersWithHighDemand = searchresult.filter((item) => item.totalTradedValue > 0.1);
+    if(trackSelectedStocks) {
+        searchresult = searchresult.filter((item) => selectedStocks.includes(item.ticker));
+    }
+    
+    let onlyBuyersWithHighDemand = searchresult.filter((item) => priceVolumeCriteria('gain', item));
 
-    let onlyQualityStocks = searchresult.filter((item) => item.current > 1);
-
-    onlyQualityStocks.forEach((item) => {
+    onlyBuyersWithHighDemand.forEach((item) => {
         latestDictDataFormat[item.ticker] = item;
         const {ticker} = item;
-        if(!dictDataFormat[ticker] && priceVolumeCriteria('gain', item)) {
+        if(!dictDataFormat[ticker]) {
             addedToBuyers[item.ticker] = extractRelevantParams(item);
         }
     });
     const dictDataFormatKeys = Object.keys(dictDataFormat);
     dictDataFormatKeys.forEach((item) => {
         // item.bestSellQty > 0
-        if(!latestDictDataFormat[item] && priceVolumeCriteria('loss', item)) {
+        if(!latestDictDataFormat[item]) {
             const getItem = dictDataFormat[item];
             removedFromBuyers[getItem.ticker] = extractRelevantParams(getItem);
         }
@@ -123,26 +123,28 @@ const filterBuyersDataFun = function filterBuyersData(buyersData, state) {
 const filterSellesDataFun = function filterSellesDataFun(sellersData, state) {
     let {searchresult = []} = sellersData;
     // searchresult.splice(Math.random()*sellersData.pagesummary.totalRecords, 1);
-    const {dictSellerDataFormat = {}} = state;
+    const {dictSellerDataFormat = {}, trackSelectedStocks, selectedStocks = []} = state;
     // const dataLen = pagesummary.totalRecords;
     let removedFromSellers = {};
     let addedToSellers = {};
     let latestDictDataFormat = {};
 
-    let onlySellersWithHighDemand = searchresult.filter((item) => item.totalTradedValue > 0.1);
+    if(trackSelectedStocks) {
+        searchresult = searchresult.filter((item) => selectedStocks.includes(item.ticker));
+    }
 
-    let onlyQualityStocks = searchresult.filter((item) => item.current > 1);
+    let onlySellersWithHighDemand = searchresult.filter((item) => priceVolumeCriteria('loss', item));
 
-    onlyQualityStocks.forEach((item) => {
+    onlySellersWithHighDemand.forEach((item) => {
         latestDictDataFormat[item.ticker] = item;
-        if(!dictSellerDataFormat[item.ticker] && priceVolumeCriteria('loss', item)) {
+        if(!dictSellerDataFormat[item.ticker]) {
             addedToSellers[item.ticker] = extractRelevantParams(item);
         }
     });
     const dictDataFormatKeys = Object.keys(dictSellerDataFormat);
     dictDataFormatKeys.forEach((item) => {
         // item.bestBuyQty > 0
-        if(!latestDictDataFormat[item] && priceVolumeCriteria('gain', item)) {
+        if(!latestDictDataFormat[item]) {
             const getItem = dictSellerDataFormat[item];
             removedFromSellers[getItem.ticker] = extractRelevantParams(getItem);
         }
@@ -177,78 +179,33 @@ const filterSellesDataFun = function filterSellesDataFun(sellersData, state) {
     };
 };
 
-const filterFallFromHigh = function filterFallFromHigh(fallFromHigh, state) {
-    let {searchresult = []} = fallFromHigh;
-    // searchresult.splice(Math.random()*fallFromHigh.pagesummary.totalRecords, 1);
-    let filterFallFromHighData = searchresult.filter((item) => {
-        const {bestBuyQty, volume, totalTradedValue, belowDaysHighPerChange, current} = item;
-        return (totalTradedValue > 0.03 && belowDaysHighPerChange < -5 && current > 0.5);
-    });
-
-    return {
-        filterFallFromHighData
-    };
-};
-
-const filterRecoverFromLow = function filterRecoverFromLow(recoverData, state) {
-    let {searchresult = []} = recoverData;
-    // searchresult.splice(Math.random()*recoverData.pagesummary.totalRecords, 1);
-    let recoverFilterData = searchresult.filter((item) => {
-        const {bestBuyQty, volume, totalTradedValue, aboveDaysLowPerChange, current} = item;
-        return (totalTradedValue > 0.03 && aboveDaysLowPerChange > 5 && current > 0.5);
-    });
-
-    return {
-        recoverFilterData
-    };
-};
-
 
 const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
     let {searchresult = []} = allStocksData;
-    let {allStocksScripts = {}} = state;
+    let {allStocksScripts = {}, selectedStocks = [], trackSelectedStocks} = state;
+
+    if(trackSelectedStocks) {
+        searchresult = searchresult.filter((item) => selectedStocks.includes(item.ticker));
+    }
 
     // searchresult.splice(Math.random()*allStocksData.pagesummary.totalRecords, 1);
     // searchresult = searchresult.slice(1, 10);
     let allVolatileStocks = searchresult.filter((item) => item.totalTradedValue > 0.1 && (item.percentChange > 2 || item.percentChange < -2));
 
-    allVolatileStocks = allVolatileStocks.map((item) => {
-        // let buyToSell = null;
-        // if(item.bestSellQty === 0) {
-        //     buyToSell = 1000000;
-        // } else if(item.bestBuyQty === 0) {
-        //     buyToSell = 0;
-        // } else {
-        //     buyToSell = item.bestBuyQty/item.bestSellQty;
-        // }
-        return {
-            ...item
-            // buyToSellRatio: buyToSell
-        };
-    });
     let newAllStocksScripts = {};
     let totalTradedValue = 0;
     let filterSuddenValueGainer = {};
-
     let extremeSuddenSell = {};
     let extremeSuddenBuy = {};
-
     let myHoldings = {};
-
     let fallInYear = {};
 
-    searchresult.forEach((item) => {
+    const onlyTradedStocks = searchresult.filter((item) => item.totalTradedValue > 0.005);
+    onlyTradedStocks.forEach((item) => {
         const {ticker} = item;
         // newAllStocksScripts[ticker] = {...item, bestBuyQty: item.bestBuyQty*parseInt((Math.random()*40))};
        
         let buyToSell = null;
-        // if(item.bestSellQty === 0) {
-        //     buyToSell = 1000000;
-        // } else if(item.bestBuyQty === 0) {
-        //     buyToSell = 0;
-        // } else {
-        //     buyToSell = item.bestBuyQty/item.bestSellQty;
-        // }
         newAllStocksScripts[ticker] = {...item, buyToSellRatio: buyToSell};
         totalTradedValue = totalTradedValue + item.totalTradedValue;
         if(item.volume > (allStocksScripts[ticker] && allStocksScripts[ticker].volume*1.2)) {
@@ -256,15 +213,15 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
         }
 
 
-        if(item.current > (allStocksScripts[ticker] && allStocksScripts[ticker].current * 1.03) &&
-           item.aboveDaysLowPerChange > allStocksScripts[ticker].aboveDaysLowPerChange * 1.03 &&
-            totalTradedValue > 0.1) {
+        if(item.current > (allStocksScripts[ticker] && allStocksScripts[ticker].current * 1.05) &&
+        //    item.aboveDaysLowPerChange > allStocksScripts[ticker].aboveDaysLowPerChange * 1.03 &&
+            item.totalTradedValue > 0.05) {
 
             extremeSuddenBuy[item.ticker] = {...extractRelevantParams(item), lastPrice: allStocksScripts[ticker].current, currentPrice: item.current};
         }
-        if(item.current > (allStocksScripts[ticker] && allStocksScripts[ticker].current * 1.03) &&
-           item.belowDaysHighPerChange > allStocksScripts[ticker].belowDaysHighPerChange * 1.03 &&
-            totalTradedValue > 0.1) {
+        if(item.current * 1.05 < (allStocksScripts[ticker] && allStocksScripts[ticker].current) &&
+        //    item.belowDaysHighPerChange < allStocksScripts[ticker].belowDaysHighPerChange * 1.03 &&
+           item.totalTradedValue > 0.05) {
             extremeSuddenSell[item.ticker] = {...extractRelevantParams(item), lastPrice: allStocksScripts[ticker].current, currentPrice: item.current};
         }
 
@@ -273,7 +230,7 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
             fallInYear[item.ticker] = {...extractRelevantParams(item)};
         }
 
-        const myItem = MY_HOLDING.find((item1) => item1.includes(item[ticker]) || item.ticker.includes(item1));
+        const myItem = selectedStocks.find((item1) => ticker === item1);
         if(myItem) {
             myHoldings[item.ticker] = {...extractRelevantParams(item)};
         }
@@ -306,12 +263,10 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
 export default function sampleReducer(alias, initialState = {}) {
     return (state = initialState, action) => {
         switch (action.type) {
-            case FALL_FROM_HIGH:
             case FETCH_ONLY_BUYERS:
             case FETCH_ONLY_SELLERS:
-            case RECOVER_FROM_LOW:
             case MOST_ACTIVE_BY_VALUE:
-            case LOAD_INIT_DATA:
+            case LOAD_OPEN_INTEREST:
                 return Object.assign({}, {
                     ...state,
                     loading:true
@@ -321,7 +276,28 @@ export default function sampleReducer(alias, initialState = {}) {
                     ...stockInitState
                 });
             }
-            case `${LOAD_INIT_DATA}${SUCCESS}`:
+
+            case UPDATE_SELECTED_STOCKS: {
+                return Object.assign({}, {
+                    ...state,
+                    selectedStocks: action.payload.selectedStocks
+                });
+            }
+
+            case TRACK_SELECTED_STOCKS: {
+                return Object.assign({}, {
+                    ...state,
+                    trackSelectedStocks: action.payload
+                });
+            }
+
+            case UPDATE_REFRESH_RATE: {
+                return Object.assign({}, {
+                    ...state,
+                    refreshRate: action.payload
+                });
+            }
+            case `${LOAD_OPEN_INTEREST}${SUCCESS}`:
                 return Object.assign({}, {
                     ...state,
                     loading: false,
@@ -353,24 +329,6 @@ export default function sampleReducer(alias, initialState = {}) {
                     ...state,
                     openInterest: action.payload,
                     filterOpenInterest
-                });
-            case `${RECOVER_FROM_LOW}${SUCCESS}`:
-
-                var filterRecoverFromLowData = filterRecoverFromLow(action.payload, state);
-                return Object.assign({}, {
-                    ...state,
-                    loading: false,
-                    ...filterRecoverFromLowData,
-                    recoverFromLowData: action.payload
-                });
-            case `${FALL_FROM_HIGH}${SUCCESS}`:
-
-                var filterFallFromHighData = filterFallFromHigh(action.payload, state);
-                return Object.assign({}, {
-                    ...state,
-                    loading: false,
-                    ...filterFallFromHighData,
-                    fallFromHighData: action.payload
                 });
             case `${MOST_ACTIVE_BY_VALUE}${SUCCESS}`:
 

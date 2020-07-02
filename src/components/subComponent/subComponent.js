@@ -9,7 +9,6 @@ import VolumeShockers from './stocksCategory/VolumeShockers';
 
 import TowardOnlyBuyers from './stocksCategory/TowardOnlyBuyers';
 
-import HugePriceChangers from './stocksCategory/HugePriceChangers';
 import QueryBuilder from './stocksCategory/QueryBuilder';
 
 
@@ -67,7 +66,7 @@ class SubComponent extends React.Component {
     }
 
     componentDidMount() {
-     
+                
         this.excecuteInInterval();
         this.props.mostActiveByValue({exchange: 'nse', minprice: 0, maxprice: 100000});
         this.timer = setInterval(() => {
@@ -134,8 +133,7 @@ class SubComponent extends React.Component {
     render() {
 
         const {screenType = '', localDataStorage = {}, filterOpenInterest = {}, totalTradedValue,
-        QueryBuilderStocks = {}, sharpReversalStocks = {}, VolumeShockersStocks = {}, 
-        HugePriceChangersStocks = {}} = this.props;
+        QueryBuilderStocks = {}, sharpReversalStocks = {}, VolumeShockersStocks = {}} = this.props;
 
         const {allStocksScripts = {}} = VolumeShockersStocks;
         
@@ -172,27 +170,11 @@ class SubComponent extends React.Component {
                     <div className="setting-items">
                         Max: <InputNumber value={this.state.maxprice} min={0} max={100000} defaultValue={3} onChange={(val) => this.setState({maxprice: val})} />
                     </div>
-
+                    
+                    <span>Total Traded Value - {totalTradedValue} </span>
                     <span className="open-interest-btn"><Button onClick={this.fetchOpenInterest}>Fetch Open Interest</Button></span>
                 </div>
 
-                <div>
-                    <Select
-                        showSearch
-                        className="query-select-attribute"
-                        value={this.state.tradeTicker}
-                        placeholder="Select an attribute"
-                        optionFilterProp="key"
-                        onChange={(val) => this.setState({tradeTicker: val})}
-                        filterOption={(input, option) =>
-                            option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }>
-                        {Object.keys(allStocksScripts).map((item) => <Option key={item} value={item}>{item}</Option>)}
-                    </Select>
-                    QTY: <InputNumber value={this.state.tradeQty} defaultValue={1} onChange={(val) => this.setState({tradeQty: val})} />
-                   
-                </div>  
-                <div>Total Traded Value - {totalTradedValue} </div>
                 {screenType === 'SharpReversal' && <SharpReversal
                     commonProps={commonProps}
                     fetchOnlyBuyers={this.props.fetchOnlyBuyers}
@@ -209,12 +191,6 @@ class SubComponent extends React.Component {
                     commonProps={commonProps}
                     mostActiveByValue={this.props.mostActiveByValue}
                     volumeShockers={VolumeShockersStocks}/>}
-
-                {screenType === 'PricerChangers' && <HugePriceChangers
-                    commonProps={commonProps}
-                    fetchRecoverFromLow={this.props.fetchRecoverFromLow}
-                    fetchFallFromHigh={this.props.fetchFallFromHigh}
-                    hugePriceChanges={HugePriceChangersStocks}/>}
 
                 {screenType === 'QueryBuilder' && <QueryBuilder
                     commonProps={commonProps}
@@ -239,8 +215,6 @@ SubComponent.propTypes = {
     initData: PropTypes.object,
     localDataStorage: PropTypes.object,
     fetchOnlySellers:PropTypes.func,
-    fetchRecoverFromLow:PropTypes.func,
-    fetchFallFromHigh:PropTypes.func,
     mostActiveByValue:PropTypes.func
 };
 
@@ -250,8 +224,6 @@ SubComponent.defaultProps = {
     initData: {},
     localDataStorage: {},
     fetchOnlySellers:() => {},
-    fetchRecoverFromLow:() => {},
-    fetchFallFromHigh:() => {},
     mostActiveByValue:() => {}
 };
 

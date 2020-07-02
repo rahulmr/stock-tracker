@@ -1,4 +1,6 @@
 import React, {Component} from 'react';
+
+import {Button} from 'antd';
 import {bindAll} from 'lodash';
 
 class Music extends React.Component {
@@ -42,7 +44,7 @@ class Music extends React.Component {
 
         return (
             <div>
-                <button onClick={this.pause}>Pause</button>
+                <Button onClick={this.pause} className="ant-btn ant-btn-primary" >Pause</Button>
             </div>
         );
     }

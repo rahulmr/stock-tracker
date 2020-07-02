@@ -1,5 +1,4 @@
 import {combineReducers} from 'redux';
-// import {reducer as oidcReducer} from 'redux-oidc';
 import sampleReducer from './sampleReducer';
 import stockInitState from '../initialState/stockState';
 
@@ -11,7 +10,6 @@ if(savedData) {
 }
 
 const rootReducer = combineReducers({
-    // oidcReducer,
     sampleReducer: sampleReducer('', {...stockInitState, ...savedData})
 });
 
