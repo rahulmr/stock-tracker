@@ -42,16 +42,18 @@ const priceVolumeCriteria = function priceVolumeCriteria(type, item) {
 
 
 const extractRelevantParams = function extractRelevantParams(item) {
-    return {
-        companyName: item.companyName,
-        updatedDateTime: item.updatedDateTime,
-        current: item.current,
-        volume: item.volume,
-        percentChange: item.percentChange,
-        totalTradedValue: item.totalTradedValue,
-        ticker: item.ticker,
-        companyId: item.companyId
-    };
+
+    const {companyName, updatedDateTime, current, volume, percentChange, totalTradedValue, ticker,
+        companyId, month6HighPrice, month6LowPrice, fiftyTwoWeekHighPrice, ...rest} = item;      
+
+    const obj = {
+        fall6Percent: parseInt(item.month6HighPrice/item.current*100), 
+        fallYearPercent: parseInt(item.yearHighPrice/item.current*100),
+        rise6Percent: parseInt(item.current/item.month6LowPrice*100, 10), 
+        riseYearPercent: parseInt(item.current/item.yearLowPrice*100)
+    }
+    return {companyName, updatedDateTime, current, volume, percentChange, totalTradedValue, ticker,
+        companyId, month6HighPrice, month6LowPrice, fiftyTwoWeekHighPrice, ...obj};
 };
 
 const filterBuyersDataFun = function filterBuyersData(buyersData, state) {
@@ -64,6 +66,7 @@ const filterBuyersDataFun = function filterBuyersData(buyersData, state) {
     // const dataLen = pagesummary.totalRecords;
     let removedFromBuyers = {};
     let addedToBuyers = {};
+    let addedToBuyersSelective = {}
     let latestDictDataFormat = {};
 
     if(trackSelectedStocks) {
@@ -72,13 +75,20 @@ const filterBuyersDataFun = function filterBuyersData(buyersData, state) {
     
     let onlyBuyersWithHighDemand = searchresult.filter((item) => priceVolumeCriteria('gain', item));
 
-    onlyBuyersWithHighDemand.forEach((item) => {
+    onlyBuyersWithHighDemand = onlyBuyersWithHighDemand.map((item) => {
         latestDictDataFormat[item.ticker] = item;
         const {ticker} = item;
         if(!dictDataFormat[ticker]) {
             addedToBuyers[item.ticker] = extractRelevantParams(item);
+            if(item.month6LowPrice * 1.8 > item.current &&
+                (item.month6HighPrice > item.current * 1.6 || item.fiftyTwoWeekHighPrice > item.current * 2.5) &&
+                item.totalTradedValue > 0.05) {
+                addedToBuyersSelective[item.ticker] = extractRelevantParams(item);
+            }
         }
+        return extractRelevantParams(item)
     });
+
     const dictDataFormatKeys = Object.keys(dictDataFormat);
     dictDataFormatKeys.forEach((item) => {
         // item.bestSellQty > 0
@@ -102,6 +112,7 @@ const filterBuyersDataFun = function filterBuyersData(buyersData, state) {
 
     if(dictDataFormatKeys.length === 0) {
         addedToBuyers = {};
+        addedToBuyersSelective = {};
     }
 
     return {
@@ -113,6 +124,10 @@ const filterBuyersDataFun = function filterBuyersData(buyersData, state) {
         addedToBuyers: {
             ...state.addedToBuyers,
             ...addedToBuyers
+        },
+        addedToBuyersSelective: {
+            ...state.addedToBuyersSelective,
+            ...addedToBuyersSelective
         },
         onlyBuyersWithHighDemand
     };
@@ -135,11 +150,13 @@ const filterSellesDataFun = function filterSellesDataFun(sellersData, state) {
 
     let onlySellersWithHighDemand = searchresult.filter((item) => priceVolumeCriteria('loss', item));
 
-    onlySellersWithHighDemand.forEach((item) => {
+    
+    onlySellersWithHighDemand = onlySellersWithHighDemand.map((item) => {
         latestDictDataFormat[item.ticker] = item;
         if(!dictSellerDataFormat[item.ticker]) {
             addedToSellers[item.ticker] = extractRelevantParams(item);
         }
+        return extractRelevantParams(item)
     });
     const dictDataFormatKeys = Object.keys(dictSellerDataFormat);
     dictDataFormatKeys.forEach((item) => {
@@ -160,7 +177,6 @@ const filterSellesDataFun = function filterSellesDataFun(sellersData, state) {
             removedFromSellers[getItem.ticker] = extractRelevantParams(getItem);
         }
     });
-    
     if(dictDataFormatKeys.length === 0) {
         addedToSellers = {};
     }
@@ -183,15 +199,22 @@ const filterSellesDataFun = function filterSellesDataFun(sellersData, state) {
 const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
     let {searchresult = []} = allStocksData;
     let {allStocksScripts = {}, selectedStocks = [], trackSelectedStocks} = state;
-
+    let allStocksNames = [];
     if(trackSelectedStocks) {
+
+        searchresult.forEach((item) => {
+            newAllStocksScripts[item.ticker] = item;
+            allStocksNames.push(item.ticker);
+        });
         searchresult = searchresult.filter((item) => selectedStocks.includes(item.ticker));
     }
 
     // searchresult.splice(Math.random()*allStocksData.pagesummary.totalRecords, 1);
     // searchresult = searchresult.slice(1, 10);
-    let allVolatileStocks = searchresult.filter((item) => item.totalTradedValue > 0.1 && (item.percentChange > 2 || item.percentChange < -2));
+    let allVolatileStocks = searchresult.filter((item) => item.totalTradedValue > 0.05 && (item.percentChange > 2 || item.percentChange < -2));
 
+
+    let largeCap = searchresult.filter((item) => item.totalTradedValue > 10);
     let newAllStocksScripts = {};
     let totalTradedValue = 0;
     let filterSuddenValueGainer = {};
@@ -199,36 +222,46 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
     let extremeSuddenBuy = {};
     let myHoldings = {};
     let fallInYear = {};
+    let riseInYear = {};
 
     const onlyTradedStocks = searchresult.filter((item) => item.totalTradedValue > 0.005);
     onlyTradedStocks.forEach((item) => {
         const {ticker} = item;
         // newAllStocksScripts[ticker] = {...item, bestBuyQty: item.bestBuyQty*parseInt((Math.random()*40))};
        
-        let buyToSell = null;
-        newAllStocksScripts[ticker] = {...item, buyToSellRatio: buyToSell};
+        if(!trackSelectedStocks) {
+            newAllStocksScripts[ticker] = item;
+            allStocksNames.push(ticker);
+        }
+
+        const lastScriptData = allStocksScripts[ticker] || {};
         totalTradedValue = totalTradedValue + item.totalTradedValue;
-        if(item.volume > (allStocksScripts[ticker] && allStocksScripts[ticker].volume*1.2)) {
-            filterSuddenValueGainer[item.ticker] = {...extractRelevantParams(item), buyToSellRatio: buyToSell};
+        if(item.volume > lastScriptData.volume*1.2) {
+            filterSuddenValueGainer[item.ticker] = extractRelevantParams(item);
         }
 
 
-        if(item.current > (allStocksScripts[ticker] && allStocksScripts[ticker].current * 1.05) &&
+        if(item.current > lastScriptData.current * 1.03 && item.totalTradedValue > lastScriptData.totalTradedValue > 1.03 &&
         //    item.aboveDaysLowPerChange > allStocksScripts[ticker].aboveDaysLowPerChange * 1.03 &&
-            item.totalTradedValue > 0.05) {
+            item.totalTradedValue > 0.1) {
 
-            extremeSuddenBuy[item.ticker] = {...extractRelevantParams(item), lastPrice: allStocksScripts[ticker].current, currentPrice: item.current};
+            extremeSuddenBuy[item.ticker] = {...extractRelevantParams(item), lastPrice: lastScriptData.current, currentPrice: item.current};
         }
-        if(item.current * 1.05 < (allStocksScripts[ticker] && allStocksScripts[ticker].current) &&
+        if(item.current * 1.03 < lastScriptData.current && item.totalTradedValue > lastScriptData.totalTradedValue > 1.03 &&
         //    item.belowDaysHighPerChange < allStocksScripts[ticker].belowDaysHighPerChange * 1.03 &&
-           item.totalTradedValue > 0.05) {
-            extremeSuddenSell[item.ticker] = {...extractRelevantParams(item), lastPrice: allStocksScripts[ticker].current, currentPrice: item.current};
+           item.totalTradedValue > 0.1) {
+            extremeSuddenSell[item.ticker] = {...extractRelevantParams(item), lastPrice: lastScriptData.current, currentPrice: item.current};
         }
 
 
-        if((item.current < item.yearHighPrice/2.5 || item.current < item.month6HighPrice/2.5) && item.totalTradedValue > 0.001) {
-            fallInYear[item.ticker] = {...extractRelevantParams(item)};
+        if((item.current < item.yearHighPrice/3 || item.current < item.month6HighPrice/3) && item.totalTradedValue > 0.001) {
+            fallInYear[item.ticker] = {...extractRelevantParams(item), fall6Percent: parseInt(item.month6HighPrice/item.current*100), fallYearPercent: parseInt(item.yearHighPrice/item.current*100)};
         }
+        if((item.current/3 > item.yearLowPrice || item.current/3 > item.month6LowPrice) && item.totalTradedValue > 0.001) {
+            riseInYear[item.ticker] = {...extractRelevantParams(item), rise6Percent: parseInt(item.current/item.month6LowPrice*100, 10), riseYearPercent: parseInt(item.current/item.yearLowPrice*100)};
+        }
+
+        
 
         const myItem = selectedStocks.find((item1) => ticker === item1);
         if(myItem) {
@@ -251,8 +284,11 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
             ...state.extremeSuddenSell,
             ...extremeSuddenSell
         },
+        largeCap,
         myHoldings,
         fallInYear,
+        riseInYear,
+        allStocksNames,
         allVolatileStocks,
         allStocksScripts: {...newAllStocksScripts},
         totalTradedValue

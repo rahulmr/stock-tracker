@@ -1,8 +1,10 @@
 import React from 'react';
-import {Table, Modal, Button} from 'antd';
+import {Table, Modal, Button, Collapse} from 'antd';
 import PropTypes from 'prop-types';
 import {bindAll, kebabCase, isEmpty} from 'lodash';
 import Item from 'antd/lib/list/Item';
+const {Panel} = Collapse;
+
 
 class StocksTable extends React.Component {
 
@@ -68,13 +70,17 @@ class StocksTable extends React.Component {
         }
         sectionData = sectionData.map((item) => {
             const {updatedDateTime = ''} = item;
-            return {...item, updatedDateTime: updatedDateTime.split('|')[0]};
+            return {...item,
+                updatedDateTime: updatedDateTime.split('|')[0],
+                showBgHighlight: new Date().getTime() - new Date(`${(new Date()).toLocaleDateString()} ${updatedDateTime.split('|')[0]}`).getTime() < 500000 ? true : false
+            };
         });
         const defaultcolumns = [
             {
                 title: 'Company Name',
                 dataIndex: 'companyName',
                 key: 'companyName',
+                // width: 180,
                 sorter: (a, b) => a.companyName.localeCompare(b.companyName),
                 sortDirections: ['ascend', 'descend']
             },
@@ -102,7 +108,7 @@ class StocksTable extends React.Component {
                 key: 'updatedDateTime',
                 defaultSortOrder: 'descend',
                 sorter: (a, b) => new Date(`${(new Date()).toLocaleDateString()} ${a.updatedDateTime}`).getTime() > new Date(`${(new Date()).toLocaleDateString()} ${b.updatedDateTime}`).getTime() ? 1 : -1
-            }, 
+            }
             // {
             //     title: 'Action',
             //     key: 'action',
@@ -143,47 +149,57 @@ class StocksTable extends React.Component {
         }
         additionalCols.forEach((item) => {
             defaultcolumns.push({
-                title: item,
-                dataIndex: item,
-                key: item,
+                title: item.name,
+                dataIndex: item.dataIndex,
+                key: item.dataIndex,
                 defaultSortOrder: 'descend',
-                sorter: (a, b) => a[item] - b[item]
+                sorter: (a, b) => a[item.dataIndex] - b[item.dataIndex]
             });
-        })
+        });
 
 
-        return(<div className="sections">
-            <div className="section-header">
-                <h3>{sectionTitle}<span className="stock-signify">{info}</span></h3>
+
+
+        return(
+            // <Collapse defaultActiveKey={['1']}>
+            //     <Panel header="Settings" key="1">
+            <div className="sections">
+                <div className="section-header">
+                    <h3>{sectionTitle}<span className="stock-signify">{info}</span></h3>
+                </div>
+                <div className="section-body">
+                    <Table
+                        onRow={(record, rowIndex) => {
+                            return {
+                                onClick: (e) => this.onRowClick(record)
+                            };
+                        }}
+                        // scroll={{ x: 1500, y: 300 }}
+                        rowClassName={(record, index) => record.showBgHighlight ? 'highlight-row': ''}
+                        dataSource={sectionData}
+                        columns={columns || defaultcolumns}
+                        pagination={ {pageSize: 8} }/>
+                    <Modal
+                        className="field-properties-modal"
+                        title= {'Stock Details'}
+                        visible={this.state.showModal}
+                        onOk={this.handleOk}
+                        onCancel={this.handleOk}
+                        footer={[
+                            <Button key="primary-button" className="primary-button" type="primary" onClick={this.handleOk}>
+                                        Ok
+                            </Button>
+                        ]}
+                        destroyOnClose={true}>
+                        <div>
+                            {this.showModalContent()}
+                        </div>
+                    </Modal>
+                </div>
             </div>
-            <div className="section-body">
-                <Table
-                    onRow={(record, rowIndex) => {
-                        return {
-                            onClick: (e) => this.onRowClick(record)
-                        };
-                    }}
-                    dataSource={sectionData}
-                    columns={columns || defaultcolumns}
-                    pagination={sectionData.length > 10}/>
-                <Modal
-                    className="field-properties-modal"
-                    title= {'Stock Details'}
-                    visible={this.state.showModal}
-                    onOk={this.handleOk}
-                    onCancel={this.handleOk}
-                    footer={[
-                        <Button key="primary-button" className="primary-button" type="primary" onClick={this.handleOk}>
-                            Ok
-                        </Button>
-                    ]}
-                    destroyOnClose={true}>
-                    <div>
-                        {this.showModalContent()}
-                    </div>
-                </Modal>
-            </div>
-        </div>);
+            //     </Panel>
+            // </Collapse>
+        );
 
     }
 }

@@ -32,6 +32,7 @@ class OITable extends React.Component {
         sectionData = sectionData.map((item) => {
             return {...item, 
                 ['Increase(%)']: item['Increase(%)'].replace('%', ''),
+                showBgHighlight: parseInt(item['Increase(%)'].replace('%', ''), 10) > 40,
                 ['Chg(Rs)Chg (%)']: item['Chg(Rs)Chg (%)'].split('  ')[1].replace('%', '')
             };
         });
@@ -49,6 +50,7 @@ class OITable extends React.Component {
                 title: 'OI Increase Percent',
                 dataIndex: 'Increase(%)',
                 key: 'Increase(%)',
+                defaultSortOrder: 'descend',
                 sorter: (a, b) => a['Increase(%)'] - b['Increase(%)']
             },
             {
@@ -77,6 +79,7 @@ class OITable extends React.Component {
                         };
                     }}
                     dataSource={sectionData}
+                    rowClassName={(record) => record.showBgHighlight ? 'highlight-row': ''}
                     columns={columns || defaultcolumns}
                     pagination={sectionData.length > 10}/>
                 <Modal

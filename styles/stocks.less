@@ -1,28 +1,47 @@
 
 
+body {
+  background-color: #ababab;
+}
+
 
 .stock-data{
   margin: 10px;
-
+  margin-top: 20px;
   .setting-config {
     width: 100%;
-    border-bottom: 3px solid black;
     .setting-items{
       float: left;
       margin-right: 30px;
     }
     .duration{
-      margin-top: 20px;
+      margin-top: 30px;
     }
+
+    .stocks-select{
+      min-width: 300px;
+    }
+  }
+
+  .numrange{
+    margin-left: 10px;
   }
 
   .tables-containers{
     background-color: #222;
     color: #ccc;
+    width: 100%;
     float: left;
     .ant-table-tbody > tr > td, h1, h2, h3, h4, h5, h6{
       color: #ccc;
+    }  
+    .ant-table-tbody > tr.highlight-row{
+      background-color: lightyellow;
+      td {
+        color: black;
+      }
     }
+
 
     .sections{
       min-width: 350px;
@@ -51,7 +70,8 @@
       }
   
       .section-body{
-        max-height: 400px;
+        max-height: 480px;
+        min-height: 440px;
         overflow-y: auto;
       }
       .section-item{
@@ -94,6 +114,15 @@
   padding: 4px 5px;
 }
 
+
+.ant-btn-secondary{
+  background-color: #777;
+  color: white
+}
+.ant-btn-secondary:hover{
+  background-color: #888;
+  color: white
+}
 
 /*************** Layout ********************************/
 
@@ -153,6 +182,17 @@
   .query-column-select{
     width: 100%;
     max-width: 400px;
+    min-width: 100px;
+  }
+
+  .select-stocks-btns{
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .select-stocks-checkbox {
+    margin-left: 30px;
+    font-weight: normal;
   }
 }
 
@@ -179,21 +219,28 @@
   }
   .stock-data{
     margin: 10px;
-    .sections{
-      min-width: 350px;
-      max-width: 90%;
-    }
 
-    .setting-config .setting-items{
-      padding-bottom: 10px;
-      margin-right: 5px;
-      .ant-input-number{
-        width: 80px;
+    .tables-containers {
+        .sections{
+          min-width: 350px;
+          max-width: 90%;
+          margin-left: 3%;
+          width: 94%;
+
+          .section-body {
+            min-height: 400px;
+          }
+        }
       }
-    }
-    .open-interest-btn{
-      display: none;
-    }
+
+      .setting-config .setting-items{
+        padding-bottom: 10px;
+        margin-right: 5px;
+        .ant-input-number{
+          width: 80px;
+        }
+      }
+    
   }
 
 
@@ -204,7 +251,9 @@
         .stock-data .sections {
           min-width: 300px;
           max-width: 90%;
-          margin-left: -15px;
+          // margin-left: -15px;
+          margin-left: 3%;
+          width: 94%;
       }
      
     }
@@ -223,5 +272,14 @@
     .logical-block .delete-btn{
       margin-left: 10px;
     }
+  }
+
+  .refresh-rate { display: none; }
+  .ant-radio-button-wrapper{
+    padding: 0 6px;
+  }
+
+  .ant-input-number {
+    height: 25px;
   }
 }

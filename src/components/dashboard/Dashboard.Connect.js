@@ -6,13 +6,14 @@ import {withRouter} from 'react-router-dom';
 const mapStateToProps = (state) => {
     const {sampleReducer = {}} = state;
     const {initData, dictDataFormat, dictSellerDataFormat, removedFromBuyers, removedFromSellers, 
-        addedToBuyers, addedToSellers, openInterest, filterOpenInterest, onlyBuyersWithHighDemand, 
-        filterSuddenValueGainer, allStocksScripts, allVolatileStocks, totalTradedValue, 
-        extremeSuddenBuy, extremeSuddenSell, myHoldings, fallInYear, selectedStocks,
+        addedToBuyers, addedToBuyersSelective, addedToSellers, openInterest, filterOpenInterest, onlyBuyersWithHighDemand, 
+        filterSuddenValueGainer, allStocksScripts, allVolatileStocks, largeCap, totalTradedValue, allStocksNames,
+        extremeSuddenBuy, extremeSuddenSell, myHoldings, fallInYear, riseInYear, selectedStocks,
         onlySellersWithHighDemand, trackSelectedStocks, refreshRate} = sampleReducer;
 
     const localStoreData = {
         addedToBuyers,
+        addedToBuyersSelective,
         removedFromBuyers,
         removedFromSellers,
         addedToSellers,
@@ -22,8 +23,10 @@ const mapStateToProps = (state) => {
         filterSuddenValueGainer,
         totalTradedValue,
         allVolatileStocks,
+        largeCap,
         myHoldings,
         fallInYear,
+        riseInYear,
         selectedStocks,
         extremeSuddenBuy,
         extremeSuddenSell,
@@ -36,6 +39,7 @@ const mapStateToProps = (state) => {
         onlyBuyersData: dictDataFormat,
         onlySellersData: dictSellerDataFormat,
         allStocksScripts,
+        allStocksNames,
         openInterest,
         localStoreData
     };

@@ -6,13 +6,14 @@ const mapStateToProps = (state, ownProps) => {
     const {screenType = ''} = ownProps;
     const {sampleReducer = {}} = state;
     const {initData, dictDataFormat, dictSellerDataFormat, removedFromBuyers, removedFromSellers, 
-        addedToBuyers, addedToSellers, openInterest, filterOpenInterest, onlyBuyersWithHighDemand, 
+        addedToBuyers, addedToBuyersSelective, addedToSellers, openInterest, filterOpenInterest, onlyBuyersWithHighDemand, 
         filterSuddenValueGainer, allStocksScripts, allVolatileStocks, mostActiveByValueAllStocks, totalTradedValue,
         itemKeys, onlySellersWithHighDemand} = sampleReducer;
 
         
     const sharpReversalStocks = {
         addedToBuyers,
+        addedToBuyersSelective,
         addedToSellers,
         removedFromSellers,
         removedFromBuyers,

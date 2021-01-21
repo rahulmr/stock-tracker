@@ -1,5 +1,5 @@
 import React from 'react';
-import {Form, Button, Switch as AntSwitch, Select, Table, Checkbox, InputNumber, Radio} from 'antd';
+import {Form, Button, Switch as AntSwitch, Select, Table, Checkbox, InputNumber, Radio, Collapse} from 'antd';
 import PropTypes from 'prop-types';
 import {bindAll, isEmpty} from 'lodash';
 import {API_INTERVAL} from '../../consts/index';
@@ -9,13 +9,14 @@ const CheckboxGroup = Checkbox.Group;
 const plainOptions = ['largecap', 'midcap', 'smallcap'];
 import OITable from '../OiTable';
 const Option = Select.Option;
+const {Panel} = Collapse;
 
 class Dashboard extends React.Component {
     constructor(props) {
         super(props);
-        bindAll(this, ['fetchOpenInterest', 'changeExchange', 'resetAll', 'pauseAudio',
+        bindAll(this, ['fetchOpenInterest', 'changeExchange', 'resetAll', 'pauseAudio', 'clearTrackStocks',
             'compareWithSaveState', 'saveCurrentState', 'selectStocks', 'monitorSelectedStock',
-            'onCheckAllChange', 'onMarketCapChange', 'excecuteInInterval']);
+            'onCheckAllChange', 'onMarketCapChange', 'excecuteInInterval', 'updateLocalStorage']);
         this.count = 0;
         this.timer = null;
         this.state = {
@@ -107,28 +108,39 @@ class Dashboard extends React.Component {
     }
 
     componentDidMount() {
-        
+
         this.excecuteInInterval();
         this.timer = setInterval(() => {
-            this.excecuteInInterval();
+            this.excecuteInInterval(false);
         }, API_INTERVAL);
     }
 
-    excecuteInInterval() {
+    updateLocalStorage() {
+        localStorage.removeItem('stockdata');
+        if(this.props.localStoreData) {
+            localStorage.setItem('stockdata', JSON.stringify(this.props.localStoreData));
+        }
+    }
+
+    excecuteInInterval(noCondition = true) {
         const {refreshRate} = this.props;
         const interval = parseInt(refreshRate*1000, 10) / API_INTERVAL;
         this.count++;
-        if(this.count % interval === 0) {
+        if(this.count % interval === 0 || noCondition) {
             // update data in localstorage every minute
             if(this.count % 2 === 0) {
-                localStorage.removeItem('stockdata');
-                if(this.props.localStoreData) {
-                    localStorage.setItem('stockdata', JSON.stringify(this.props.localStoreData));
+                this.updateLocalStorage();
+
+                if(this.count % 4 === 0) {
+                    const timer = setTimeout(() => {
+                        window.location.reload();
+                        clearTimeout(timer);
+                    }, 5000);
                 }
             }
             const commonProps = {
                 exchange: this.state.exchange,
-                marketCap: this.state.checkedList.toString(),
+                marketcap: this.state.checkedList.toString(),
                 minprice: this.state.minprice,
                 maxprice: this.state.maxprice,
                 duration: this.state.duration
@@ -136,7 +148,8 @@ class Dashboard extends React.Component {
             this.props.fetchOnlyBuyers(commonProps);
             this.props.fetchOnlySellers(commonProps);
             this.props.mostActiveByValue(commonProps);
-            if(this.count % 10 === 0) {
+	    this.fetchOpenInterest();
+            if(this.count % 4 === 0) {
                 this.fetchOpenInterest();
             }
         }
@@ -190,11 +203,12 @@ class Dashboard extends React.Component {
             info={info} />);
     }
 
-    renderSectionOnObject(sectionTitle, sectionData, info = '') {
+    renderSectionOnObject(sectionTitle, sectionData, info = '', additionalCols) {
         sectionData = Object.keys(sectionData).map((item) => sectionData[item]);
 
         return (<StocksTable
             sectionTitle={sectionTitle}
+            additionalCols={additionalCols}
             sectionData={sectionData}
             info={info} />);
     }
@@ -211,6 +225,7 @@ class Dashboard extends React.Component {
 
     selectStocks(selectedStocks) {
         this.props.updateSelectedStocks({selectedStocks});
+        setTimeout(this.updateLocalStorage, 100);
     }
 
     componentDidUpdate(prevProps) {
@@ -254,10 +269,15 @@ class Dashboard extends React.Component {
         this.props.trackStocks(e.target.checked);
     }
 
+    clearTrackStocks() {
+        this.props.updateSelectedStocks({selectedStocks: []});
+        setTimeout(this.updateLocalStorage, 100);
+    }
+
     playAudio(speechText, repeatCnt = 2) {
 
         const speechTextNew = `${speechText} in ${this.state.exchange}`;
-        console.log(speechText, speechTextNew)
+        console.log(speechText, speechTextNew);
         var cnt = 0;
         var repeat = setInterval(() => {
             var synthesis = window.speechSynthesis;
@@ -280,95 +300,133 @@ class Dashboard extends React.Component {
 
     render() {
 
-        const {initData = {}, allStocksScripts={}, localStoreData={}, updateRefreshRate} = this.props;
+        const {initData = {}, allStocksScripts={}, allStocksNames = [], localStoreData={}, updateRefreshRate} = this.props;
 
-        const {addedToBuyers = {}, removedFromBuyers = {}, filterSuddenValueGainer={}, extremeSuddenBuy={},
-            extremeSuddenSell={}, myHoldings = {}, fallInYear = {}, selectedStocks = [],
-            removedFromSellers = {}, allVolatileStocks=[], totalTradedValue = 0, refreshRate, trackSelectedStocks,
+        const {addedToBuyers = {}, addedToBuyersSelective = {}, removedFromBuyers = {}, filterSuddenValueGainer={}, extremeSuddenBuy={},
+            extremeSuddenSell={}, myHoldings = {}, fallInYear = {}, riseInYear = {}, selectedStocks = [],
+            removedFromSellers = {}, allVolatileStocks=[], largeCap=[], totalTradedValue = 0, refreshRate, trackSelectedStocks,
             addedToSellers = {}, filterOpenInterest = {}, onlyBuyersWithHighDemand = [], onlySellersWithHighDemand = []} = localStoreData;
 
-        // let newArr = this.state.selectedStocks.filter((item) => !Object.keys(allStocksScripts).includes(item));
+        // let newArr = selectedStocks.filter((item) => !Object.keys(allStocksScripts).includes(item));
 
+        const additionalCols = [{
+            name: 'Above Days low %',
+            dataIndex: 'aboveDaysLowPerChange'
+        }, {
+            name: 'Below Days high %',
+            dataIndex: 'belowDaysHighPerChange'
+        }]
+
+        const additionalHighLow = [{
+            name: 'Fall 6 months low %',
+            dataIndex: 'fall6Percent'
+        }, {
+            name: 'Fall years low %',
+            dataIndex: 'fallYearPercent'
+        },
+        {
+            name: 'Above 6 months low %',
+            dataIndex: 'rise6Percent'
+        }, {
+            name: 'Above years low %',
+            dataIndex: 'riseYearPercent'
+        }];
         return (
             <div className="stock-data">
-                <div className="setting-config">
-                    {/* {newArr.map((item) => <div key={item} value={item}>{item}</div>)} */}
 
-                    <div className="setting-items"><AntSwitch checkedChildren="NSE" unCheckedChildren="BSE" defaultChecked checked={this.state.exchange === 'nse' ? true : false} onChange={this.changeExchange} /></div>
-                    <span className="setting-items open-interest-btn"><Button onClick={this.excecuteInInterval}>Fetch Data</Button></span>
-                    <span className="setting-items"><Button className="ant-btn ant-btn-primary" onClick={this.resetAll}>Reset</Button></span>
-                    <div className="setting-items">
-                        <div className="site-checkbox-all-wrapper">
-                            <Checkbox
-                                indeterminate={this.state.indeterminate}
-                                onChange={this.onCheckAllChange}
-                                checked={this.state.checkAll}
-                            >
+
+                <Collapse defaultActiveKey={['1']}>
+                    <Panel header="Settings" key="1">
+                        <div className="setting-config">
+                            {/* {newArr.map((item) => <div key={item} value={item}>{item}</div>)} */}
+
+                            <div className="setting-items"><AntSwitch checkedChildren="NSE" unCheckedChildren="BSE" defaultChecked checked={this.state.exchange === 'nse' ? true : false} onChange={this.changeExchange} /></div>
+                            <span className="setting-items open-interest-btn"><Button className="ant-btn ant-btn-primary" onClick={this.excecuteInInterval}>Fetch Data</Button></span>
+                            <span className="setting-items"><Button className="ant-btn ant-btn-primary" onClick={this.resetAll}>Reset</Button></span>
+                            <div className="setting-items">
+                                <div className="site-checkbox-all-wrapper">
+                                    <Checkbox
+                                        indeterminate={this.state.indeterminate}
+                                        onChange={this.onCheckAllChange}
+                                        checked={this.state.checkAll}
+                                    >
                             Check all
-                            </Checkbox>
+                                    </Checkbox>
+                                </div>
+                                <CheckboxGroup
+                                    options={plainOptions}
+                                    value={this.state.checkedList}
+                                    onChange={this.onMarketCapChange}
+                                />
+                            </div>
+                            <div className="setting-items">
+                        Range:
+                                <InputNumber className="numrange" value={this.state.minprice} min={0} max={100000} defaultValue={3} onChange={(val) => this.setState({minprice: val})} />
+                                <InputNumber className="numrange" value={this.state.maxprice} min={0} max={100000} defaultValue={3} onChange={(val) => this.setState({maxprice: val})} />
+                            </div>
+
+                            <span className="refresh-rate">Refresh Rate: </span>
+                            <Select style={{width: 120}} value={refreshRate} onChange={updateRefreshRate}>
+                                <Option value="30">30 secs</Option>
+                                <Option value="45">45 secs</Option>
+                                <Option value="60">1 min</Option>
+                                <Option value="120">2 min</Option>
+                                <Option value="180">3 min</Option>
+                                <Option value="240">4 min</Option>
+                                <Option value="300">5 min</Option>
+                            </Select>
+
+                            {/* {this.state.playAudio && <Music addedToBuyers={addedToBuyers} pauseAudio={this.pauseAudio} />} */}
+                            <div className="duration">
+                                <Radio.Group onChange={(e) => this.setState({duration: e.target.value})} defaultValue="1D" buttonStyle="solid">
+                                    <Radio.Button value="1D">1D</Radio.Button>
+                                    <Radio.Button value="1W">1W</Radio.Button>
+                                    <Radio.Button value="1M">1M</Radio.Button>
+                                    <Radio.Button value="3M">3M</Radio.Button>
+                                    <Radio.Button value="6M">6M</Radio.Button>
+                                    <Radio.Button value="1Y">1Y</Radio.Button>
+                                </Radio.Group>
+                                <span style={{marginLeft: 20}}>Traded Value - {parseInt(totalTradedValue, 10)} Cr </span>
+                            </div>
+
+                            <div className="select-columns">
+                                <div className="select-stocks-btns">
+                                    <Checkbox
+                                        className="select-stocks-checkbox"
+                                        checked={trackSelectedStocks}
+                                        onChange={this.monitorSelectedStock}>Monitor selected stocks</Checkbox>
+                                    <span className="setting-items"><Button className="ant-btn ant-btn-primary" onClick={this.clearTrackStocks}>Clear Stocks List</Button></span>
+                                </div>
+                                <Select
+                                    mode="multiple"
+                                    className="stocks-select"
+                                    placeholder="Select the stocks to track"
+                                    defaultValue={this.state.selectedStocks}
+                                    value={!isEmpty(selectedStocks) ? selectedStocks : this.state.selectedStocks}
+                                    onChange={this.selectStocks}>
+                                    {allStocksNames.map((item) => <Option key={item} value={item}>{item}</Option>)}
+                                </Select>
+                            </div>
                         </div>
-                        <CheckboxGroup
-                            options={plainOptions}
-                            value={this.state.checkedList}
-                            onChange={this.onMarketCapChange}
-                        />
-                    </div>
-                    <div className="setting-items">
-                        Min: <InputNumber value={this.state.minprice} min={0} max={100000} defaultValue={3} onChange={(val) => this.setState({minprice: val})} />
-                    </div>
-                    <div className="setting-items">
-                        Max: <InputNumber value={this.state.maxprice} min={0} max={100000} defaultValue={3} onChange={(val) => this.setState({maxprice: val})} />
-                    </div>
-                    <span>Traded Value - {parseInt(totalTradedValue, 10)} Cr </span>
-                    
-                    <Select style={{width: 120}} value={refreshRate} onChange={updateRefreshRate}>
-                        <Option value="30">30 secs</Option>
-                        <Option value="45">45 secs</Option>
-                        <Option value="60">1 min</Option>
-                        <Option value="120">2 min</Option>
-                        <Option value="180">3 min</Option>
-                        <Option value="240">4 min</Option>
-                        <Option value="300">5 min</Option>
-                    </Select>
-                    <span>Refresh Rate</span>
-                    {/* {this.state.playAudio && <Music addedToBuyers={addedToBuyers} pauseAudio={this.pauseAudio} />} */}
-                    <div className="duration">
-                        <Radio.Group onChange={(e) => this.setState({duration: e.target.value})} defaultValue="1D" buttonStyle="solid">
-                            <Radio.Button value="1D">1D</Radio.Button>
-                            <Radio.Button value="1W">1W</Radio.Button>
-                            <Radio.Button value="1M">1M</Radio.Button>
-                            <Radio.Button value="3M">3M</Radio.Button>
-                            <Radio.Button value="6M">6M</Radio.Button>
-                            <Radio.Button value="1Y">1Y</Radio.Button>
-                        </Radio.Group>
-                    </div>
-                    <div className="select-columns">
-                        <h3>Select Stocks: </h3>
-                        <Checkbox
-                            checked={trackSelectedStocks} 
-                            onChange={this.monitorSelectedStock}>Watch on selected stocks</Checkbox>
-                        <Select
-                            mode="multiple"
-                            className="stocks-select"
-                            placeholder="Select the stocks to track"
-                            defaultValue={this.state.selectedStocks}
-                            value={!isEmpty(selectedStocks) ? selectedStocks : this.state.selectedStocks}
-                            onChange={this.selectStocks}>
-                            {allStocksScripts && Object.keys(allStocksScripts).map((item) => <Option key={item} value={item}>{item}</Option>)}
-                        </Select>
-                    </div>
-                </div>
+
+                    </Panel>
+                </Collapse>
 
                 <div className="tables-containers">
                     <div>
+                        {this.renderSectionOnObject('Selective Only Buyers', addedToBuyersSelective, 'Buy soon - selective')}
                         {this.renderSectionOnObject('Added To Only Buyers', addedToBuyers, 'Buy soon')}
                         {this.renderSectionOnObject('Removed from  Only Buyers', removedFromBuyers, 'Watch for sell')}
                         {this.renderSectionOnObject('Added To Only Sellers', addedToSellers, 'Sell soon')}
                         {this.renderSectionOnObject('Removed from Only Sellers', removedFromSellers, 'Watch for buy')}
                     </div>
+                    {this.renderSectionOnArray('All volatile Stocks', allVolatileStocks, 'Traded above 10 lacs with 2+% price change', '', additionalCols)}
 
                     {this.renderSectionOnObjectOI('Open Interest Change', filterOpenInterest, 'Sudden Rise in Open Interest')}
 
+                    {this.renderSectionOnArray('Large Cap', largeCap, 'Traded above 5 crore', '', additionalCols)}
+
+                    
                     {/* {this.renderSectionOnArray('Recover from intra day low', allVolatileStocks, 'Short Trade Sell', 'aboveDaysLowPerChange') }
 
                     {this.renderSectionOnArray('Fall From intra day high', allVolatileStocks, 'Short Trade Buy', 'belowDaysHighPerChange') } */}
@@ -379,16 +437,33 @@ class Dashboard extends React.Component {
 
                     {this.renderSectionOnObject('Sudden value shocker', filterSuddenValueGainer, 'Sudden Rise in Demand')}
 
-                    {this.renderSectionOnArray('All volatile Stocks', allVolatileStocks, 'Traded above 10 lacs with above 2% price change', '', ['aboveDaysLowPerChange', 'belowDaysHighPerChange'])}
-
+                   
                     {this.renderSectionOnObject('My Holdings', myHoldings, 'My Holding status')}
 
-                    {this.renderSectionOnArray('High open interest with only buyers', onlyBuyersWithHighDemand, '', 'bestBuyQty') }
+                    
 
-                    {this.renderSectionOnArray('High open interest with only Sellers', onlySellersWithHighDemand, '', 'bestSellQty') }
-                    {this.renderSectionOnObject('Extreme Fall In Year', fallInYear, '6 months to year')}
+                    {this.renderSectionOnArray('High open interest with only buyers', onlyBuyersWithHighDemand, '', '', additionalHighLow) }
 
-                    <div className="compare-saved-state">
+                    {this.renderSectionOnArray('High open interest with only Sellers', onlySellersWithHighDemand, '', '', additionalHighLow) }
+                    {this.renderSectionOnObject('Extreme Fall In Year', fallInYear, '6 months to year', [{
+                        name: 'Fall 6 months low %',
+                        dataIndex: 'fall6Percent'
+                    }, {
+                        name: 'Fall years low %',
+                        dataIndex: 'fallYearPercent'
+                    }])}
+                
+                    {this.renderSectionOnObject('Extreme Rise In Year', riseInYear, '6 months to year', [{
+                        name: 'Above 6 months low %',
+                        dataIndex: 'rise6Percent'
+                    }, {
+                        name: 'Above years low %',
+                        dataIndex: 'riseYearPercent'
+                    }])}
+
+                    
+
+                    {/* <div className="compare-saved-state">
                         <h3>
                             Save current market state data & compare with saved state to know what has changed in term of volatility
                         </h3>
@@ -404,7 +479,7 @@ class Dashboard extends React.Component {
                         {this.renderSectionOnObject('Buyers Volatility', this.state.toBuyFiltered, '', 'buyToSellRatio')}
                         {this.renderSectionOnObject('Sellers Volatility', this.state.toSellFiltered, '', 'buyToSellRatio')}
 
-                    </div>
+                    </div> */}
                 </div>
 
             </div>
@@ -429,7 +504,7 @@ Dashboard.defaultProps = {
     localStoreData: {},
     fetchOnlySellers:() => {},
     mostActiveByValue:() => {},
-    refreshRate: "60"
+    refreshRate: '60'
 };
 
 export default Dashboard;

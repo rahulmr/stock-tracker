@@ -27,7 +27,7 @@ class SubComponent extends React.Component {
         this.timer = null;
         this.state = {
             exchange: 'nse,bse',
-            // marketCap: ['largecap','midcap','smallcap'],
+            // marketcap: ['largecap','midcap','smallcap'],
             checkedList: plainOptions,
             indeterminate: true,
             checkAll: false,
@@ -66,7 +66,19 @@ class SubComponent extends React.Component {
     }
 
     componentDidMount() {
-                
+        document.querySelectorAll('.pubscript').forEach(el => el.remove());
+        var timer2 = setTimeout(() => {
+            const googleMapScript = document.createElement('script');
+            googleMapScript.src = `https://kite.trade/publisher.js?v=3`;
+            googleMapScript.className = 'pubscript';
+            window.document.body.appendChild(googleMapScript);
+            googleMapScript.defer = true;
+            googleMapScript.addEventListener('load', function () {
+                window.myname = this;
+            });
+            clearTimeout(timer2);
+        }, 500);
+        
         this.excecuteInInterval();
         this.props.mostActiveByValue({exchange: 'nse', minprice: 0, maxprice: 100000});
         this.timer = setInterval(() => {
@@ -139,7 +151,7 @@ class SubComponent extends React.Component {
         
         const commonProps = {
             exchange: this.state.exchange,
-            marketCap: this.state.checkedList.toString(),
+            marketcap: this.state.checkedList.toString(),
             minprice: this.state.minprice,
             maxprice: this.state.maxprice
         };
@@ -175,6 +187,35 @@ class SubComponent extends React.Component {
                     <span className="open-interest-btn"><Button onClick={this.fetchOpenInterest}>Fetch Open Interest</Button></span>
                 </div>
 
+                {/* <div>
+                    <Select
+                        showSearch
+                        className="query-select-attribute"
+                        value={this.state.tradeTicker}
+                        placeholder="Select an attribute"
+                        optionFilterProp="key"
+                        onChange={(val) => this.setState({tradeTicker: val})}
+                        filterOption={(input, option) =>
+                            option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }>
+                        {Object.keys(allStocksScripts).map((item) => <Option key={item} value={item}>{item}</Option>)}
+                    </Select>
+                    QTY: <InputNumber value={this.state.tradeQty} defaultValue={1} onChange={(val) => this.setState({tradeQty: val})} />
+                    <button data-kite="l96dkdptji64q5ds"
+                        data-exchange="NSE"
+                        data-tradingsymbol={this.state.tradeTicker}
+                        data-transaction_type="BUY"
+                        data-quantity={this.state.tradeQty}
+                        data-order_type="LIMIT"
+                        data-price="100">Buy {this.state.tradeTicker}</button>
+                    <button data-kite="l96dkdptji64q5ds"
+                        data-exchange="NSE"
+                        data-tradingsymbol={this.state.tradeTicker}
+                        data-transaction_type="SELL"
+                        data-quantity={this.state.tradeQty}
+                        data-order_type="LIMIT"
+                        data-price="100">SELL {this.state.tradeTicker}</button>
+                </div>      */}
                 {screenType === 'SharpReversal' && <SharpReversal
                     commonProps={commonProps}
                     fetchOnlyBuyers={this.props.fetchOnlyBuyers}

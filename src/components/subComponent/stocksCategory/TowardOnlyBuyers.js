@@ -36,8 +36,8 @@ class TowardOnlyBuyers extends React.Component {
 
     excecuteInInterval() {
         const {commonProps} = this.props;
-        const {exchange = 'nse', minprice, maxprice, marketCap} = commonProps;
-        this.props.mostActiveByValue({exchange, minprice, maxprice, marketCap});
+        const {exchange = 'nse', minprice, maxprice, marketcap} = commonProps;
+        this.props.mostActiveByValue({exchange, minprice, maxprice, marketcap});
 
         this.count++;
         let {currentNumber} = this.state;

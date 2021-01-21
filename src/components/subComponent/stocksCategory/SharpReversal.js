@@ -22,9 +22,9 @@ class SharpReversal extends React.Component {
     excecuteInInterval() {
         //update data in localstorage every minute
         const {commonProps} = this.props;
-        const {exchange = 'nse', minprice, maxprice, marketCap} = commonProps;
-        this.props.fetchOnlyBuyers({exchange, minprice, maxprice, marketCap});
-        this.props.fetchOnlySellers({exchange, minprice, maxprice, marketCap});
+        const {exchange = 'nse', minprice, maxprice, marketcap} = commonProps;
+        this.props.fetchOnlyBuyers({exchange, minprice, maxprice, marketcap});
+        this.props.fetchOnlySellers({exchange, minprice, maxprice, marketcap});
     }
 
     renderSectionOnObjectOI(sectionTitle, sectionData, info = '') {
