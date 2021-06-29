@@ -53,7 +53,7 @@ class SharpReversal extends React.Component {
 
     render() {
 
-        const {sharpReversal = {}, filterOpenInterest} = this.props;
+        const {sharpReversal = {}, filterOpenInterest = {}} = this.props;
         const {addedToBuyers = {}, removedFromBuyers = {}, removedFromSellers = {},
             onlyBuyersWithHighDemand=[], onlySellersWithHighDemand = [], addedToSellers = {}} = sharpReversal;
 

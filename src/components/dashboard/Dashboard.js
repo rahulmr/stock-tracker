@@ -14,7 +14,7 @@ const {Panel} = Collapse;
 class Dashboard extends React.Component {
     constructor(props) {
         super(props);
-        bindAll(this, ['fetchOpenInterest', 'changeExchange', 'resetAll', 'pauseAudio', 'clearTrackStocks',
+        bindAll(this, ['fetchOpenInterest', 'fetchVolumeInterest', 'changeExchange', 'resetAll', 'pauseAudio', 'clearTrackStocks',
             'compareWithSaveState', 'saveCurrentState', 'selectStocks', 'monitorSelectedStock',
             'onCheckAllChange', 'onMarketCapChange', 'excecuteInInterval', 'updateLocalStorage']);
         this.count = 0;
@@ -149,6 +149,23 @@ class Dashboard extends React.Component {
             this.props.fetchOnlySellers(commonProps);
             this.props.mostActiveByValue(commonProps);
 	    this.fetchOpenInterest();
+        // this.fetchVolumeInterest('https://www1.nseindia.com/live_market/dynaContent/live_analysis/volume_spurts/volume_spurts.json');
+        // this.fetchVolumeInterest('https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY');
+        // this.fetchVolumeInterest('https://www1.nseindia.com/live_market/dynaContent/live_analysis/oi_spurts/riseInPriceRiseInOI.json');
+        // this.fetchVolumeInterest('https://www.nseindia.com/api/liveEquity-derivatives?index=nifty_bank_fut');
+        // this.fetchVolumeInterest('https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20NEXT%2050');
+        // this.fetchVolumeInterest('https://www1.nseindia.com/live_market/dynaContent/live_analysis/price_band/allSecuritiesUpper.json');
+        // this.fetchVolumeInterest('https://www1.nseindia.com/homepage/Indices1.json');
+        // this.fetchVolumeInterest('https://www.bloombergquint.com/feapi/markets/options/open-interest');
+        // this.fetchVolumeInterest('https://www.bloombergquint.com/feapi/markets/options');
+        // this.fetchVolumeInterest('https://www.bloombergquint.com/feapi/markets/options/put-call-ratio?security-type=stock&limit=200');
+//         https://www.bloombergquint.com/feapi/markets/options/put-call-ratio?security-type=stock&limit=200
+
+
+//         post - https://ewmw.edelweiss.in/api/Market/optionchainguest
+//         aTyp: "OPTIDX"
+// exp: "18 Mar 2021"
+// uSym: "BANKNIFTY"
             if(this.count % 4 === 0) {
                 this.fetchOpenInterest();
             }
@@ -194,6 +211,27 @@ class Dashboard extends React.Component {
         xhttp.open('GET', 'https://www.moneycontrol.com/stocks/fno/marketstats/futures/openint_inc/homebody.php', true);
         xhttp.send();
     }
+
+
+    fetchVolumeInterest(url) {
+        // this.props.fetchOpenInterest();
+        var xhttp = new XMLHttpRequest();
+        var that = this;
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var el = document.createElement('div');
+                el.innerHTML = this.responseText;
+                var nodeList = el.querySelectorAll('.tblList tbody tr');
+               
+
+                // that.props.openInterest(createArrItems);
+            }
+        };
+        xhttp.open('GET', url, true);
+        xhttp.send();
+    }
+
+    
 
     renderSectionOnObjectOI(sectionTitle, sectionData, info = '') {
         sectionData = Object.keys(sectionData).map((item) => sectionData[item]);
@@ -305,7 +343,7 @@ class Dashboard extends React.Component {
         const {addedToBuyers = {}, addedToBuyersSelective = {}, removedFromBuyers = {}, filterSuddenValueGainer={}, extremeSuddenBuy={},
             extremeSuddenSell={}, myHoldings = {}, fallInYear = {}, riseInYear = {}, selectedStocks = [],
             removedFromSellers = {}, allVolatileStocks=[], largeCap=[], totalTradedValue = 0, refreshRate, trackSelectedStocks,
-            addedToSellers = {}, filterOpenInterest = {}, onlyBuyersWithHighDemand = [], onlySellersWithHighDemand = []} = localStoreData;
+            addedToSellers = {}, filterOpenInterest = {}, suddenChangeInPrice = {}, suddenChangeInOI = {}, onlyBuyersWithHighDemand = [], onlySellersWithHighDemand = []} = localStoreData;
 
         // let newArr = selectedStocks.filter((item) => !Object.keys(allStocksScripts).includes(item));
 
@@ -424,6 +462,8 @@ class Dashboard extends React.Component {
 
                     {this.renderSectionOnObjectOI('Open Interest Change', filterOpenInterest, 'Sudden Rise in Open Interest')}
 
+                    {this.renderSectionOnObjectOI('Sudden Change Price', suddenChangeInPrice, 'Sudden Change Price')}
+                    {this.renderSectionOnObjectOI('Sudden Change OI', suddenChangeInOI, 'Sudden Change OI')}
                     {this.renderSectionOnArray('Large Cap', largeCap, 'Traded above 5 crore', '', additionalCols)}
 
                     

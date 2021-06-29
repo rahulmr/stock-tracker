@@ -52,7 +52,7 @@ class StocksTable extends React.Component {
                 <Table
                     dataSource={tableData}
                     columns={columns}
-                    pagination={tableData.length > 10}/>
+                    pagination={tableData.length > 14}/>
                 <a href={stockURL} target="_blank" rel="noopener noreferrer">More Details ></a>
             </div>
         );
@@ -178,7 +178,7 @@ class StocksTable extends React.Component {
                         rowClassName={(record, index) => record.showBgHighlight ? 'highlight-row': ''}
                         dataSource={sectionData}
                         columns={columns || defaultcolumns}
-                        pagination={ {pageSize: 8} }/>
+                        pagination={ {pageSize: 12} }/>
                     <Modal
                         className="field-properties-modal"
                         title= {'Stock Details'}

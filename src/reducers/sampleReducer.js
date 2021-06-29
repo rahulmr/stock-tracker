@@ -14,13 +14,38 @@ const {SUCCESS} = API_SUFFIX;
 
 const filterOpenInterestUtil = function filterOpenInterestUtil(allOIMap, state) {
     let myMap = {};
+    let suddenChangeInPrice = {};
+    let suddenChangeInOI = {};
+
+    const {filterOpenInterest: lastFetchData} = state;
     Object.keys(allOIMap).forEach((item) => {
         const value = allOIMap[item];
-        if(parseFloat(value['Increase(%)'], 10) > 5 && parseFloat(value['Chg(Rs)Chg (%)'].split(/\s+/g)[1], 10)) {
+        const [changeRs, changePer] = value['Chg(Rs)Chg (%)'].split(/\s+/g);
+        if(parseFloat(value['Increase(%)'], 10) > 5 && parseFloat(changePer, 10)) {
             myMap[item] = {...allOIMap[item]};
         }
+        myMap[item]['changePerPrice'] = parseFloat(changePer, 10);
+        myMap[item]['changeRs'] = parseFloat(changeRs, 10);
+        myMap[item]['changePerOI'] = parseFloat(changeRs, 10);
+
+        if(lastFetchData['changePerPrice'] && Math.abs(lastFetchData['changePerPrice'] - myMap[item]['changePerPrice']) > 1) {
+            const {changePerPrice} = myMap[item];
+            suddenChangeInPrice[item] = {
+                item,
+                changePerPrice,
+                ['Increase(%)']: myMap[item]['Increase(%)']
+            };
+        }
+        if(lastFetchData['Increase(%)'] && Math.abs(lastFetchData['Increase(%)'] - myMap[item]['Increase(%)']) > 5) {
+            const {changePerPrice} = myMap[item];
+            suddenChangeInOI[item] = {
+                item,
+                changePerPrice,
+                ['Increase(%)']: myMap[item]['Increase(%)']
+            };
+        }
     });
-    return myMap;
+    return {myMap, suddenChangeInOI, suddenChangeInPrice};
 };
 
 const priceVolumeCriteria = function priceVolumeCriteria(type, item) {
@@ -33,7 +58,7 @@ const priceVolumeCriteria = function priceVolumeCriteria(type, item) {
     //     }
     //     // return true;
     // }
-    if(totalTradedValue > 0.06 || (type === 'gain' && bestBuyQty*current > 300000) || (type === 'loss' && bestSellQty*current > 300000)) {
+    if(totalTradedValue > 0.2 || totalTradedValue > 0.02 && (type === 'gain' && bestBuyQty*current > 300000) || (type === 'loss' && bestSellQty*current > 300000)) {
         return true;
     }
   
@@ -82,7 +107,7 @@ const filterBuyersDataFun = function filterBuyersData(buyersData, state) {
             addedToBuyers[item.ticker] = extractRelevantParams(item);
             if(item.month6LowPrice * 1.8 > item.current &&
                 (item.month6HighPrice > item.current * 1.6 || item.fiftyTwoWeekHighPrice > item.current * 2.5) &&
-                item.totalTradedValue > 0.05) {
+                item.totalTradedValue > 0.1) {
                 addedToBuyersSelective[item.ticker] = extractRelevantParams(item);
             }
         }
@@ -200,8 +225,8 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
     let {searchresult = []} = allStocksData;
     let {allStocksScripts = {}, selectedStocks = [], trackSelectedStocks} = state;
     let allStocksNames = [];
+    let newAllStocksScripts = {};
     if(trackSelectedStocks) {
-
         searchresult.forEach((item) => {
             newAllStocksScripts[item.ticker] = item;
             allStocksNames.push(item.ticker);
@@ -211,11 +236,10 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
 
     // searchresult.splice(Math.random()*allStocksData.pagesummary.totalRecords, 1);
     // searchresult = searchresult.slice(1, 10);
-    let allVolatileStocks = searchresult.filter((item) => item.totalTradedValue > 0.05 && (item.percentChange > 2 || item.percentChange < -2));
+    let allVolatileStocks = searchresult.filter((item) => item.totalTradedValue > 0.1 && (item.percentChange > 2 || item.percentChange < -2));
 
 
     let largeCap = searchresult.filter((item) => item.totalTradedValue > 10);
-    let newAllStocksScripts = {};
     let totalTradedValue = 0;
     let filterSuddenValueGainer = {};
     let extremeSuddenSell = {};
@@ -224,7 +248,7 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
     let fallInYear = {};
     let riseInYear = {};
 
-    const onlyTradedStocks = searchresult.filter((item) => item.totalTradedValue > 0.005);
+    const onlyTradedStocks = searchresult.filter((item) => item.totalTradedValue > 0.1);
     onlyTradedStocks.forEach((item) => {
         const {ticker} = item;
         // newAllStocksScripts[ticker] = {...item, bestBuyQty: item.bestBuyQty*parseInt((Math.random()*40))};
@@ -243,21 +267,21 @@ const suddenChangeInValue = function suddenChangeInValue(allStocksData, state) {
 
         if(item.current > lastScriptData.current * 1.03 && item.totalTradedValue > lastScriptData.totalTradedValue > 1.03 &&
         //    item.aboveDaysLowPerChange > allStocksScripts[ticker].aboveDaysLowPerChange * 1.03 &&
-            item.totalTradedValue > 0.1) {
+            item.totalTradedValue > 0.15) {
 
             extremeSuddenBuy[item.ticker] = {...extractRelevantParams(item), lastPrice: lastScriptData.current, currentPrice: item.current};
         }
         if(item.current * 1.03 < lastScriptData.current && item.totalTradedValue > lastScriptData.totalTradedValue > 1.03 &&
         //    item.belowDaysHighPerChange < allStocksScripts[ticker].belowDaysHighPerChange * 1.03 &&
-           item.totalTradedValue > 0.1) {
+           item.totalTradedValue > 0.15) {
             extremeSuddenSell[item.ticker] = {...extractRelevantParams(item), lastPrice: lastScriptData.current, currentPrice: item.current};
         }
 
 
-        if((item.current < item.yearHighPrice/3 || item.current < item.month6HighPrice/3) && item.totalTradedValue > 0.001) {
+        if((item.current < item.yearHighPrice/3 || item.current < item.month6HighPrice/3) && item.totalTradedValue > 0.1) {
             fallInYear[item.ticker] = {...extractRelevantParams(item), fall6Percent: parseInt(item.month6HighPrice/item.current*100), fallYearPercent: parseInt(item.yearHighPrice/item.current*100)};
         }
-        if((item.current/3 > item.yearLowPrice || item.current/3 > item.month6LowPrice) && item.totalTradedValue > 0.001) {
+        if((item.current/3 > item.yearLowPrice || item.current/3 > item.month6LowPrice) && item.totalTradedValue > 0.1) {
             riseInYear[item.ticker] = {...extractRelevantParams(item), rise6Percent: parseInt(item.current/item.month6LowPrice*100, 10), riseYearPercent: parseInt(item.current/item.yearLowPrice*100)};
         }
 
@@ -360,11 +384,13 @@ export default function sampleReducer(alias, initialState = {}) {
                     onlySellersData: action.payload
                 });
             case SET_OPEN_INTEREST:
-                var filterOpenInterest = filterOpenInterestUtil(action.payload, state);
+                var {myMap, suddenChangeInOI, suddenChangeInPrice} = filterOpenInterestUtil(action.payload, state);
                 return Object.assign({}, {
                     ...state,
                     openInterest: action.payload,
-                    filterOpenInterest
+                    filterOpenInterest: myMap,
+                    suddenChangeInOI,
+                    suddenChangeInPrice
                 });
             case `${MOST_ACTIVE_BY_VALUE}${SUCCESS}`:
 

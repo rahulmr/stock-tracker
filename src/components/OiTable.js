@@ -26,14 +26,20 @@ class OITable extends React.Component {
     render() {
         let {sectionData = [], param, sectionTitle= '', info = '', columns} = this.props;
         const {stockitem = {}} = this.state;
+        
         if(isEmpty(sectionData)) {
             return null;
         }
         sectionData = sectionData.map((item) => {
+            if(!item['Increase(%)']) {
+                item['Increase(%)'] = '';
+            } else {
+                item['Increase(%)'] = item['Increase(%)'].toString()
+            }
             return {...item, 
-                ['Increase(%)']: item['Increase(%)'].replace('%', ''),
-                showBgHighlight: parseInt(item['Increase(%)'].replace('%', ''), 10) > 40,
-                ['Chg(Rs)Chg (%)']: item['Chg(Rs)Chg (%)'].split('  ')[1].replace('%', '')
+                ['Increase(%)']: item['Increase(%)'],
+                showBgHighlight: item['changePerPrice'] > 40,
+                ['changePerPrice']: item['changePerPrice']
             };
         });
 
@@ -55,16 +61,19 @@ class OITable extends React.Component {
             },
             {
                 title: 'Change Percentage',
-                dataIndex: 'Chg(Rs)Chg (%)',
-                key: 'Chg(Rs)Chg (%)',
-                sorter: (a, b) => a['Chg(Rs)Chg (%)'] - b['Chg(Rs)Chg (%)']
+                dataIndex: 'changePerPrice',
+                key: 'changePerPrice',
+                sorter: (a, b) => a['changePerPrice'] - b['changePerPrice']
             },
             {
                 title: 'Last Price',
                 dataIndex: 'Last Price',
                 key: 'Last Price',
                 sorter: (a, b) => a['Last Price'] - b['Last Price']
-            }
+            },
+
+
+            
         ];
 
         return(<div className="sections">
